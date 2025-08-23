@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>V for Video! 🌌</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(ellipse at bottom, #0b0c1b 0%, #000000 100%);
+      color: white;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    }
+    .question {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    button {
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #1f1f2e;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #343454;
+    }
+    .correct {
+      background-color: green !important;
+    }
+    .wrong {
+      background-color: red !important;
+    }
+    #scoreCard {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+    }
+    #timer, #wrongCounter, #streakCounter, #progressTracker {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #ffd700;
+    }
+    #restartBtn {
+      margin-top: 2rem;
+      padding: 0.7rem 2rem;
+      font-size: 1.1rem;
+      background-color: #444466;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+    }
+    #nameForm {
+      margin-bottom: 1.5rem;
+    }
+    #nameInput {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="quizContainer">
+    <div id="nameForm">
+      <input type="text" id="nameInput" placeholder="Enter your name" />
+      <button onclick="beginQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quizContent" style="display:none;">
+      <div id="timer">⏳ Time: 0s</div>
+      <div id="wrongCounter">❌ Wrong Attempts: 0</div>
+      <div id="streakCounter">🔥 Streak: 0</div>
+      <div id="progressTracker">📍 Question 1 of 5</div>
+      <div class="question" id="question">Loading...</div>
+      <div class="options" id="options"></div>
+      <div id="scoreCard"></div>
+      <button id="restartBtn" style="display: none;">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      // Sample questions (you can paste your full quizData array here)
+  {
+    q: "We joined college last week.",
+    options: [
+      "A. Where do you join college?",
+      "B. When did you join college?",
+      "C. Who is joining college now?",
+      "D. What did you join yesterday?"
+    ],
+    correct: [1],
+    example: "When did you travel last summer?"
+  },
+  {
+    q: "I am currently reading Harry Potter and the Philosopher’s Stone.",
+    options: [
+      "A. Which book are you currently reading?",
+      "B. Why did you write a book?",
+      "C. Who published the book?",
+      "D. When did you finish the book?"
+    ],
+    correct: [0],
+    example: "Which movie are you currently watching?"
+  },
+  {
+    q: "I completed my 12th Standard in St. John’s Matriculation School, Neyveli.",
+    options: [
+      "A. When will you complete your 12th Standard?",
+      "B. Where did you complete your 12th Standard?",
+      "C. Who is studying in 12th Standard?",
+      "D. What will you study in 12th Standard?"
+    ],
+    correct: [1],
+    example: "Where did you attend your first school?"
+  },
+  {
+    q: "An enquiry is being conducted to find the root cause of the AI-147 crash in Ahmedabad.",
+    options: [
+      "A. What is being conducted to find the root cause of the crash?",
+      "B. Why is the crash late?",
+      "C. Who is flying the plane?",
+      "D. When will the plane land?"
+    ],
+    correct: [0],
+    example: "What is being organised to celebrate the festival?"
+  },
+  {
+    q: "The RCB team won their first ever IPL title on June 3rd 2025.",
+    options: [
+      "A. What did the RCB team win on June 3rd 2025?",
+      "B. Who is losing the IPL title?",
+      "C. Why are teams winning every day?",
+      "D. When is the next World Cup?"
+    ],
+    correct: [0],
+    example: "What did India win in the Olympics?"
+  },
+  {
+    q: "The restaurant is 2 miles away from my home.",
+    options: [
+      "A. Why is the restaurant far?",
+      "B. How far is the restaurant from your home?",
+      "C. Who is eating in the restaurant?",
+      "D. What is your favourite dish?"
+    ],
+    correct: [1],
+    example: "How far is the railway station from here?"
+  },
+  {
+    q: "Operation Sindoor took place on May 7th 2025.",
+    options: [
+      "A. What took place on May 7th 2025?",
+      "B. When is the holiday?",
+      "C. Why did you eat Sindoor?",
+      "D. Who is writing the exam?"
+    ],
+    correct: [0],
+    example: "What happened on Independence Day?"
+  },
+  {
+    q: "The teacher chose Nethra as the class representative for this semester.",
+    options: [
+      "A. Why is Nethra playing?",
+      "B. Who did the teacher choose as the class representative?",
+      "C. Where is the teacher going?",
+      "D. What is your semester project?"
+    ],
+    correct: [1],
+    example: "Who won the first prize in the competition?"
+  },
+  {
+    q: "I listen to songs and play video games in my free time.",
+    options: [
+      "A. What do you do in your free time?",
+      "B. Why are you late to class?",
+      "C. Who is playing cricket?",
+      "D. Where is your homework?"
+    ],
+    correct: [0],
+    example: "What do you usually eat for breakfast?"
+  },
+  {
+    q: "I didn’t attend college yesterday because I went to the school to receive my 12th mark sheet.",
+    options: [
+      "A. Why didn’t you attend college yesterday?",
+      "B. Who is receiving lunch today?",
+      "C. What are you studying tomorrow?",
+      "D. When is the school holiday?"
+    ],
+    correct: [0],
+    example: "Why did you miss the bus yesterday?"
+  }
+    ];
+
+    let current = 0;
+    let correctCount = 0;
+    let totalWrongGuesses = 0;
+    let startTime;
+    let timerInterval;
+    let playerName = "";
+    let guessesPerQuestion = [];
+    let currentStreak = 0;
+    let highestStreak = 0;
+    let streakHistory = [];
+
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const timerEl = document.getElementById("timer");
+    const wrongCounterEl = document.getElementById("wrongCounter");
+    const streakCounterEl = document.getElementById("streakCounter");
+    const progressTracker = document.getElementById("progressTracker");
+    const scoreCard = document.getElementById("scoreCard");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function beginQuiz() {
+      const nameField = document.getElementById("nameInput");
+      if (!nameField.value.trim()) {
+        alert("Please enter your name!");
+        return;
+      }
+      playerName = nameField.value.trim();
+      document.getElementById("nameForm").style.display = "none";
+      document.getElementById("quizContent").style.display = "block";
+      startQuiz();
+    }
+
+    function startQuiz() {
+      current = 0;
+      correctCount = 0;
+      totalWrongGuesses = 0;
+      guessesPerQuestion = [];
+      currentStreak = 0;
+      highestStreak = 0;
+      streakHistory = [];
+      startTime = Date.now();
+      timerEl.innerText = "⏳ Time: 0s";
+      wrongCounterEl.innerText = `❌ Wrong Attempts: 0`;
+      streakCounterEl.innerText = `🔥 Streak: 0`;
+      scoreCard.innerHTML = "";
+      restartBtn.style.display = "none";
+      loadQuestion();
+      startTimer();
+    }
+
+    function loadQuestion() {
+      if (current >= quizData.length) {
+        return showScore();
+      }
+
+      const data = quizData[current];
+      guessesPerQuestion[current] = 0;
+
+      // Clear previous buttons
+      optionsEl.innerHTML = "";
+
+      questionEl.innerHTML = `${data.q}<br><br><em>Example: ${data.example}</em>`;
+      progressTracker.innerText = `📍 Question ${current + 1} of ${quizData.length}`;
+
+      data.options.forEach((option, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = option;
+        btn.dataset.index = index;
+        btn.onclick = () => handleAnswer(btn, data.correct);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(button, correctIndexes) {
+      guessesPerQuestion[current]++;
+      const idx = parseInt(button.dataset.index);
+      const isCorrect = correctIndexes.includes(idx);
+
+      if (isCorrect) {
+        if (!button.classList.contains("correct")) {
+          button.classList.add("correct");
+          button.disabled = true;
+
+          currentStreak++;
+          if (currentStreak > highestStreak) highestStreak = currentStreak;
+          streakHistory.push(currentStreak);
+          streakCounterEl.innerText = `🔥 Streak: ${currentStreak}`;
+        }
+
+        const allClicked = correctIndexes.every(i =>
+          document.querySelector(`button[data-index="${i}"]`).classList.contains("correct")
+        );
+
+        if (allClicked) {
+          correctCount++;
+          setTimeout(() => {
+            current++;
+            loadQuestion();
+          }, 500);
+        }
+      } else {
+        totalWrongGuesses++;
+        wrongCounterEl.innerText = `❌ Wrong Attempts: ${totalWrongGuesses}`;
+        button.classList.add("wrong");
+        setTimeout(() => button.classList.remove("wrong"), 500);
+
+        currentStreak = 0;
+        streakCounterEl.innerText = `🔥 Streak: 0`;
+      }
+    }
+
+    function showScore() {
+      clearInterval(timerInterval);
+      const totalTime = Math.floor((Date.now() - startTime) / 1000);
+      questionEl.innerText = "🎉 Quiz Completed!";
+      optionsEl.innerHTML = "";
+      progressTracker.innerText = "";
+      scoreCard.innerHTML = `
+        <p>👤 Player: ${playerName}</p>
+        <p>✅ Correct Answers: ${correctCount} / ${quizData.length}</p>
+        <p>❌ Wrong Attempts: ${totalWrongGuesses}</p>
+        <p>🔥 Highest Streak: ${highestStreak}</p>
+        <p>⏱️ Time Taken: ${totalTime} seconds</p>
+        <p>📝 Guesses per Question: ${guessesPerQuestion.join(", ")}</p>
+      `;
+      restartBtn.style.display = "inline-block";
+
+      // Send data to Google Sheet
+     fetch("https://script.google.com/macros/s/AKfycbyi8GPeLlNo-dOMRdtbmIJxMeEBHz4uZLOVZSzayIoJ53nLLwLQ1vlQ28CeWLJUgb6y/exec", {
+  method: "POST",
+  mode: "no-cors",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: playerName,
+    correct: correctCount,
+    wrong: totalWrongGuesses,
+    time: totalTime,
+    guesses: guessesPerQuestion,   // stays as array
+    highestStreak: highestStreak   // still logged
+  })
+});
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        timerEl.innerText = `⏳ Time: ${elapsed}s`;
+      }, 1000);
+    }
+
+    restartBtn.onclick = () => {
+      document.getElementById("quizContent").style.display = "none";
+      document.getElementById("nameForm").style.display = "block";
+      document.getElementById("nameInput").value = "";
+    };
+      window.parent.postMessage({
+  type: "questComplete",
+  stats: {
+    score: correctCount,   // Or whatever variable holds score
+    time: totalTime        // Or your timer variable
+  }
+}, "*");
+  </script>
+</body>
+</html>

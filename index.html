@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>V for Video! 🌌</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(ellipse at bottom, #0b0c1b 0%, #000000 100%);
+      color: white;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    }
+    .question {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    button {
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #1f1f2e;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #343454;
+    }
+    .correct {
+      background-color: green !important;
+    }
+    .wrong {
+      background-color: red !important;
+    }
+    #scoreCard {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+    }
+    #timer, #wrongCounter, #streakCounter, #progressTracker {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #ffd700;
+    }
+    #restartBtn {
+      margin-top: 2rem;
+      padding: 0.7rem 2rem;
+      font-size: 1.1rem;
+      background-color: #444466;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+    }
+    #nameForm {
+      margin-bottom: 1.5rem;
+    }
+    #nameInput {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="quizContainer">
+    <div id="nameForm">
+      <input type="text" id="nameInput" placeholder="Enter your name" />
+      <button onclick="beginQuiz()">Start Quiz</button>
+    </div>
+
+    <div id="quizContent" style="display:none;">
+      <div id="timer">⏳ Time: 0s</div>
+      <div id="wrongCounter">❌ Wrong Attempts: 0</div>
+      <div id="streakCounter">🔥 Streak: 0</div>
+      <div id="progressTracker">📍 Question 1 of 5</div>
+      <div class="question" id="question">Loading...</div>
+      <div class="options" id="options"></div>
+      <div id="scoreCard"></div>
+      <button id="restartBtn" style="display: none;">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      // Sample questions (you can paste your full quizData array here)
+  {
+    q: "I am planning to visit my grandmother next week.",
+    options: [
+      "Why are you visiting your grandmother?",
+      "Who are you planning to visit tomorrow?",
+      "Where is your grandmother staying?",
+      "When are you planning to visit your grandmother?"
+    ],
+    correct: [3],
+    example: "When are you going to write the exam?"
+  },
+  {
+    q: "We should talk to the Class Advisor to get all the information.",
+    options: [
+      "When will the Advisor arrive?",
+      "What should we do after class?",
+      "Who should we talk to in order to get all the information?",
+      "Why do we need information?"
+    ],
+    correct: [2],
+    example: "Who should you ask for help with your timetable?"
+  },
+  {
+    q: "The canteen is in the east wing of Block B.",
+    options: [
+      "A. Where is the canteen located?",
+      "B. Who is eating in the canteen?",
+      "C. When does the canteen open?",
+      "D. Why is the canteen crowded?"
+    ],
+    correct: [0],
+    example: "Where is the computer lab situated?"
+  },
+  {
+    q: "I came to college by bus this morning.",
+    options: [
+      "Who came to college with you?",
+      "How did you come to college this morning?",
+      "C. When did you come to college?",
+      "D. Where did you park your vehicle?"
+    ],
+    correct: [1],
+    example: "How did you reach the stadium yesterday?"
+  },
+  {
+    q: "I was at the movies yesterday.",
+    options: [
+      "A. Where were you yesterday?",
+      "B. Who was at the movies?",
+      "C. When are you going to the movies?",
+      "D. Why do you watch movies?"
+    ],
+    correct: [0],
+    example: "Where were you during the holidays?"
+  },
+  {
+    q: "I attended the wedding with my friend.",
+    options: [
+      "Why was the wedding special?",
+      "Where was the wedding held?",
+      "When did you attend the wedding?",
+      "With whom did you attend the wedding?"
+    ],
+    correct: [3],
+    example: "With whom did you play football?"
+  },
+  {
+    q: "We will meet at 7 pm tomorrow.",
+    options: [
+      "A. Why are we meeting tomorrow?",
+      "B. Who will meet you tomorrow?",
+      "C. Where will we meet tomorrow?",
+      "D. When will we meet tomorrow?"
+    ],
+    correct: [3],
+    example: "When will the train leave the station?"
+  },
+  {
+    q: "Gukesh became the world chess champion by defeating Ding Liren.",
+    options: [
+      "A. Why did Ding Liren lose the game?",
+      "B. When did Gukesh become the champion?",
+      "C. Where was the chess championship held?",
+      "D. Who became the world chess champion by defeating Ding Liren?"
+    ],
+    correct: [3],
+    example: "Who won the gold medal in the Olympics?"
+  },
+  {
+    q: "I have been working in France for three years.",
+    options: [
+      "A. How long have you been working in France?",
+      "B. Where have you been working?",
+      "C. When did you start working?",
+      "D. Why are you working in France?"
+    ],
+    correct: [0],
+    example: "How long have you been studying English?"
+  },
+  {
+    q: "I love the second part of the movie which is filled with twists and turns.",
+    options: [
+      "A. Who is acting in the second part?",
+      "B. Which part of the movie do you love?",
+      "C. When did the movie release?",
+      "D. Why do you love movies?"
+    ],
+    correct: [1],
+    example: "Which chapter of the novel is your favourite?"
+  }
+
+    ];
+
+    let current = 0;
+    let correctCount = 0;
+    let totalWrongGuesses = 0;
+    let startTime;
+    let timerInterval;
+    let playerName = "";
+    let guessesPerQuestion = [];
+    let currentStreak = 0;
+    let highestStreak = 0;
+    let streakHistory = [];
+
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const timerEl = document.getElementById("timer");
+    const wrongCounterEl = document.getElementById("wrongCounter");
+    const streakCounterEl = document.getElementById("streakCounter");
+    const progressTracker = document.getElementById("progressTracker");
+    const scoreCard = document.getElementById("scoreCard");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function beginQuiz() {
+      const nameField = document.getElementById("nameInput");
+      if (!nameField.value.trim()) {
+        alert("Please enter your name!");
+        return;
+      }
+      playerName = nameField.value.trim();
+      document.getElementById("nameForm").style.display = "none";
+      document.getElementById("quizContent").style.display = "block";
+      startQuiz();
+    }
+
+    function startQuiz() {
+      current = 0;
+      correctCount = 0;
+      totalWrongGuesses = 0;
+      guessesPerQuestion = [];
+      currentStreak = 0;
+      highestStreak = 0;
+      streakHistory = [];
+      startTime = Date.now();
+      timerEl.innerText = "⏳ Time: 0s";
+      wrongCounterEl.innerText = `❌ Wrong Attempts: 0`;
+      streakCounterEl.innerText = `🔥 Streak: 0`;
+      scoreCard.innerHTML = "";
+      restartBtn.style.display = "none";
+      loadQuestion();
+      startTimer();
+    }
+
+    function loadQuestion() {
+      if (current >= quizData.length) {
+        return showScore();
+      }
+
+      const data = quizData[current];
+      guessesPerQuestion[current] = 0;
+
+      // Clear previous buttons
+      optionsEl.innerHTML = "";
+
+      questionEl.innerHTML = `${data.q}<br><br><em>Example: ${data.example}</em>`;
+      progressTracker.innerText = `📍 Question ${current + 1} of ${quizData.length}`;
+
+      data.options.forEach((option, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = option;
+        btn.dataset.index = index;
+        btn.onclick = () => handleAnswer(btn, data.correct);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(button, correctIndexes) {
+      guessesPerQuestion[current]++;
+      const idx = parseInt(button.dataset.index);
+      const isCorrect = correctIndexes.includes(idx);
+
+      if (isCorrect) {
+        if (!button.classList.contains("correct")) {
+          button.classList.add("correct");
+          button.disabled = true;
+
+          currentStreak++;
+          if (currentStreak > highestStreak) highestStreak = currentStreak;
+          streakHistory.push(currentStreak);
+          streakCounterEl.innerText = `🔥 Streak: ${currentStreak}`;
+        }
+
+        const allClicked = correctIndexes.every(i =>
+          document.querySelector(`button[data-index="${i}"]`).classList.contains("correct")
+        );
+
+        if (allClicked) {
+          correctCount++;
+          setTimeout(() => {
+            current++;
+            loadQuestion();
+          }, 500);
+        }
+      } else {
+        totalWrongGuesses++;
+        wrongCounterEl.innerText = `❌ Wrong Attempts: ${totalWrongGuesses}`;
+        button.classList.add("wrong");
+        setTimeout(() => button.classList.remove("wrong"), 500);
+
+        currentStreak = 0;
+        streakCounterEl.innerText = `🔥 Streak: 0`;
+      }
+    }
+
+    function showScore() {
+      clearInterval(timerInterval);
+      const totalTime = Math.floor((Date.now() - startTime) / 1000);
+      questionEl.innerText = "🎉 Quiz Completed!";
+      optionsEl.innerHTML = "";
+      progressTracker.innerText = "";
+      scoreCard.innerHTML = `
+        <p>👤 Player: ${playerName}</p>
+        <p>✅ Correct Answers: ${correctCount} / ${quizData.length}</p>
+        <p>❌ Wrong Attempts: ${totalWrongGuesses}</p>
+        <p>🔥 Highest Streak: ${highestStreak}</p>
+        <p>⏱️ Time Taken: ${totalTime} seconds</p>
+        <p>📝 Guesses per Question: ${guessesPerQuestion.join(", ")}</p>
+      `;
+      restartBtn.style.display = "inline-block";
+
+      // Send data to Google Sheet
+     fetch("https://script.google.com/macros/s/AKfycbyi8GPeLlNo-dOMRdtbmIJxMeEBHz4uZLOVZSzayIoJ53nLLwLQ1vlQ28CeWLJUgb6y/exec", {
+  method: "POST",
+  mode: "no-cors",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: playerName,
+    correct: correctCount,
+    wrong: totalWrongGuesses,
+    time: totalTime,
+    guesses: guessesPerQuestion,   // stays as array
+    highestStreak: highestStreak   // still logged
+  })
+});
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        timerEl.innerText = `⏳ Time: ${elapsed}s`;
+      }, 1000);
+    }
+
+    restartBtn.onclick = () => {
+      document.getElementById("quizContent").style.display = "none";
+      document.getElementById("nameForm").style.display = "block";
+      document.getElementById("nameInput").value = "";
+    };
+      window.parent.postMessage({
+  type: "questComplete",
+  stats: {
+    score: correctCount,   // Or whatever variable holds score
+    time: totalTime        // Or your timer variable
+  }
+}, "*");
+  </script>
+</body>
+</html>
+
