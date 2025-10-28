@@ -1,320 +1,642 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Grammar Quest: Adventure</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #23243e, #1d1d2f 75%);
-      color: #fff;
-      margin: 0; padding: 0;
-    }
-    .main-container {
-      max-width: 1100px;
-      margin: 2rem auto;
-      background: rgba(255,255,255,0.07);
-      border-radius: 18px;
-      box-shadow: 0 0 26px rgba(0,0,0,0.18);
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-    }
-    .sidebar {
-      width: 250px;
-      background: rgba(0,0,0,0.13);
-      padding: 2rem 1rem;
-      border-right: 2px solid #23243e;
-      min-height: 600px;
-    }
-    .sidebar h2 { font-size: 1.3rem; }
-    .profile-stat { margin: 1rem 0 0.8rem; }
-    .quest-map-container {
-      flex: 1;
-      padding: 2rem 2.5rem;
-    }
-    .quest-map {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-      justify-content: center;
-    }
-    .quest-node {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: #23243e;
-      border: 3px solid #ffd700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.3s, opacity 0.3s;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tap-to-Match Quiz 🌌</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(ellipse at center, #f4ecd8 0%, #e8d9b5 100%);
+    color: #3b2f1e;
+    text-align: center;
+  }
+
+  .container {
+    position: relative;
+    max-width: 900px;
+    margin: 2rem auto;
+    background: rgba(255, 255, 240, 0.85);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 1px solid #d2b48c;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .question {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: #4a3b2a;
+  }
+
+  .drag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+  }
+
+  .drag-item {
+    padding: 0.6rem 1.2rem;
+    background: #f7e7c4;
+    border: 1px solid #d2b48c;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    color: #3b2f1e;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .drag-item:hover {
+    background: #f5deb3;
+    transform: scale(1.05);
+  }
+
+  .drag-item.selected {
+    border: 2px solid #8b7355;
+    background: #f0dba5;
+  }
+
+  .drop-container {
+    display: inline;
+    text-align: left;
+    line-height: 2;
+  }
+
+  .drop-zone {
+    display: inline;
+    border: none;
+    padding: 0;
+    margin: 0 0.2rem;
+    cursor: pointer;
+    background: none;
+    color: #5b442a;
+    font-size: 1.4rem;
+  }
+
+  .drop-zone.filled {
+  background-color: transparent;
+  border: none;
+  color: #228b22;
+}
+
+  .correct {
+    color: #228b22 !important; /* soft natural green */
+    font-weight: bold;
+  }
+
+  .wrong {
+    color: #b22222 !important; /* muted brick red */
+    font-weight: bold;
+  }
+
+  @keyframes sparkle {
+    0% {
+      transform: translate(0, 0) scale(1);
       opacity: 1;
-      position: relative;
     }
-    .quest-node.locked {
-      background: #444466;
-      border: 3px dashed #666666;
-      color: #bbb;
-      cursor: not-allowed;
-      opacity: 0.6;
+    100% {
+      transform: translate(var(--random-x, 0), -100px) scale(1.5);
+      opacity: 0;
     }
-    .quest-node.completed {
-      background: #23c483;
-      border-color: #23c483;
-      color: #fff;
+  }
+
+  @keyframes gemPulse {
+    0%, 100% {
+      transform: scale(1);
     }
-    .quest-node .node-num {
-      font-weight: bold;
-      font-size: 1.2rem;
+    50% {
+      transform: scale(1.3);
     }
-    .quest-node .node-icon {
-      font-size: 1.3rem;
-    }
-    #activityFrame {
-      width: 100%;
-      min-height: 400px;
-      border: none;
-      box-shadow: 0 0 10px #23243e;
-      margin-bottom: 1rem;
-      background: #101024;
-      border-radius: 12px;
-      display: none;
-    }
-    #completionPopup {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(20,22,44,0.86);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      display: none;
-    }
-    #completionPopup .popup-content {
-      background: #23243e;
-      color: #fff;
-      padding: 2rem 3rem;
-      border-radius: 16px;
-      box-shadow: 0 0 22px #1f1f2e;
-      text-align: center;
-    }
-    #completionPopup button {
-      margin-top: 1.5rem;
-      padding: 0.8rem 2rem;
-      font-size: 1.1rem;
-      background: #23c483;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .landing {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse at bottom, #0b0c1b 0%, #000000 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 20000;
-      flex-direction: column;
-      color: #fff;
-      transition: opacity 0.5s;
-    }
-    .landing h1 { font-size: 2.2rem; margin-bottom: 1rem; }
-    .landing input { padding: 0.6rem; border-radius: 7px; border: none; font-size: 1rem; }
-    .landing button { margin-left: 1rem; padding: 0.6rem 2rem; border-radius: 7px; border: none; background: #23c483; color: #fff; font-size: 1.1rem; cursor: pointer; }
-    .landing.hide { opacity: 0; pointer-events: none; }
-    .activity-instructions {
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-      color: #ffd700;
-      text-align: center;
-      background: rgba(255,255,255,0.07);
-      border-radius: 8px;
-      padding: 0.7rem 1rem;
-    }
-  </style>
+  }
+
+  .gem-spark {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.5rem;
+    animation: sparkle 1s ease-out forwards;
+  }
+
+  .gem-counter-pulse {
+    animation: gemPulse 0.4s ease-in-out;
+  }
+
+  #scoreCard {
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    color: #4b3b2a;
+  }
+
+  #timer, #gemsCounter, #progressTracker {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #6b4f33;
+  }
+
+  #restartBtn {
+    margin-top: 2rem;
+    padding: 0.7rem 2rem;
+    font-size: 1.1rem;
+    background-color: #d2b48c;
+    border: 1px solid #a1886f;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #3b2f1e;
+    transition: background-color 0.2s ease;
+  }
+
+  #restartBtn:hover {
+    background-color: #c9a96b;
+  }
+
+  #nameForm {
+    margin-bottom: 1.5rem;
+  }
+
+  #nameInput {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #c2a677;
+    margin-right: 0.5rem;
+    background: #fffdf6;
+    color: #3b2f1e;
+  }
+
+  .quiz-header {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    font-size: 1rem;
+    color: #5b442a;
+    z-index: 10;
+  }
+
+  .quiz-header #timer {
+    text-align: left;
+    flex: 1;
+  }
+
+  .quiz-header #gemsCounter {
+    text-align: center;
+    flex: 1;
+  }
+
+  .quiz-header #progressTracker {
+    text-align: right;
+    flex: 1;
+  }
+
+</style>
+
 </head>
 <body>
-  <div class="landing" id="landingPage">
-    <h1>Welcome to Grammar Quest! 🌟</h1>
-    <p>Embark on an adventure to master English grammar.</p>
-    <input type="text" id="playerName" placeholder="Enter your name..." />
-    <button onclick="startQuestJourney()">Start Quest</button>
+<div class="container" id="quizContainer">
+ <div id="nameForm">
+  <input type="text" id="nameInput" placeholder="Enter your name" />
+  
+  <!-- Department Selector -->
+  <select id="departmentSelect" style="display: block; width: 90%; max-width: 300px; margin: 0.5rem auto; padding: 0.7rem; font-size: 1rem; border-radius: 5px; border: none;">
+    <option value="">-- Select Department --</option>
+    <option value="Cyber Security">Cyber Security</option>
+    <option value="CSE-1">CSE-1</option>
+    <option value="CSE-2">CSE-2</option>
+    <option value="CSE-3">CSE-3</option>
+    <option value="Mechanical Engineering">Mechanical Engineering</option>
+    <option value="ECE-1">ECE-1</option>
+    <option value="ECE-2">ECE-2</option>
+    <option value="ECE-3">ECE-3</option>
+    <option value="AI DS-1">AI DS-1</option>
+    <option value="AI DS-2">AI DS-2</option>
+    <option value="Civil">Civil</option>
+    <option value="Agri">Agri</option>
+    <option value="EEE">EEE</option>
+    <option value="EIE">EIE</option>
+    <option value="Medical Electronics">Medical Electronics</option>
+    <option value="IT-1">IT-1</option>
+    <option value="IT-2">IT-2</option>
+  </select>
+
+  <button onclick="beginQuiz()">Start Quiz</button>
+</div>
+
+
+  <div id="quizContent" style="display:none;">
+   <div class="quiz-header">
+  <div id="timer">⏳ 0s</div>
+  <div id="gemsCounter">💎 0</div>
+  <div id="progressTracker">📍 1 of 1</div>
+</div>
+    <div class="question" id="question"></div>
+    <div class="drag-options" id="dragOptions"></div>
+    <div class="drop-container" id="dropContainer"></div>
+    <div id="scoreCard"></div>
+    <button id="restartBtn" style="display: none;">Restart</button>
   </div>
-  <div class="main-container" style="display:none;">
-    <div class="sidebar">
-      <h2>Profile</h2>
-      <div class="profile-stat">👤 Name: <span id="profileName"></span></div>
-      <div class="profile-stat">🏅 Badges: <span id="profileBadges">—</span></div>
-      <div class="profile-stat">🔥 Streak: <span id="profileStreak">0</span></div>
-      <div class="profile-stat">✅ Completed: <span id="completedCount">0</span>/12</div>
-    </div>
-    <div class="quest-map-container">
-      <h2>Quest Map</h2>
-      <div class="quest-map" id="questMap"></div>
-      <div class="activity-instructions" id="activityInstructions" style="display:none;"></div>
-      <iframe id="activityFrame"></iframe>
-    </div>
-  </div>
-  <div id="completionPopup">
-    <div class="popup-content">
-      <h2>🎉 Quest Complete!</h2>
-      <div id="questStats"></div>
-      <button onclick="proceedToNextQuest()">Proceed to Next Quest</button>
-    </div>
-  </div>
-  <script>
-    // List all activities here
-    const activities = [
-      { title: "Wh-Questions", file: "Wh1.html", instructions: "Choose the correct Wh-question for each sentence." },
-      { title: "Wh-Questions II", file: "Wh2.html", instructions: "Continue mastering Wh-Questions." },
-      // Add more activities as you have them:
-      { title: "Activity 3", file: "Wh3.html", instructions: "Instructions for Activity 3." },
-      { title: "Activity 4", file: "Wh4.html", instructions: "Instructions for Activity 4." },
-      { title: "Activity 5", file: "Wh5.html", instructions: "Instructions for Activity 5." },
-      { title: "Activity 6", file: "Wh6.html", instructions: "Instructions for Activity 6." },
-      { title: "Activity 7", file: "Wh7.html", instructions: "Instructions for Activity 7." },
-      { title: "Activity 8", file: "Wh8.html", instructions: "Instructions for Activity 8." },
-      { title: "Activity 9", file: "Wh9.html", instructions: "Instructions for Activity 9." },
-      { title: "Activity 10", file: "Wh10.html", instructions: "Instructions for Activity 10." },
-      { title: "Activity 11", file: "Wh11.html", instructions: "Instructions for Activity 11." },
-      { title: "Activity 12", file: "Wh12.html", instructions: "Instructions for Activity 12." }
-    ];
-    // Progress tracking
-    let userProgress = {
-      unlocked: [true], // First quest unlocked
-      completed: [],
-      streak: 0,
-      badges: [],
-      name: ""
-    };
-    for (let i = 1; i < activities.length; i++) userProgress.unlocked[i] = false;
+</div>
 
-    // Load/save progress (localStorage for demo)
-    function loadProgress() {
-      const p = localStorage.getItem("grammarQuestProgress");
-      if (p) userProgress = JSON.parse(p);
-    }
-    function saveProgress() {
-      localStorage.setItem("grammarQuestProgress", JSON.stringify(userProgress));
-    }
+<script>
+const quizData = [
+  {
+  "questionItems": [
+    { "word": "The Lion King ___ an animated film", "answer": "is" },
+    { "word": "released in 1994. It ___ directed by Roger Allers and Rob Minkoff", "answer": "was" },
+    { "word": "and ___ by Walt Disney Pictures.", "answer": "produced" },
+    { "word": "The movie ___ beautiful songs written by Elton John and Tim Rice.", "answer": "has" }
+  ],
+  "answers": ["is", "was", "produced", "has"]
+},
+{
+  "questionItems": [
+    { "word": "The story ___ around a young lion named Simba", "answer": "revolves" },
+    { "word": "who ___ to become the king of the Pride Lands.", "answer": "struggles" },
+    { "word": "He ___ from his home after a tragedy and feels lost.", "answer": "runs" },
+    { "word": "Later, he ___ his courage and returns to face his past.", "answer": "finds" }
+  ],
+  "answers": ["revolves", "struggles", "runs", "finds"]
+}
 
-    // Landing page logic
-    function startQuestJourney() {
-      const name = document.getElementById("playerName").value.trim();
-      if (!name) return alert("Please enter your name!");
-      userProgress.name = name;
-      saveProgress();
-      document.getElementById("profileName").textContent = name;
-      document.getElementById("landingPage").classList.add("hide");
-      setTimeout(() => {
-        document.getElementById("landingPage").style.display = "none";
-        document.querySelector(".main-container").style.display = "";
-        renderQuestMap();
-        updateProfile();
-      }, 500);
-    }
 
-    // Quest map rendering
-    function renderQuestMap() {
-      const map = document.getElementById("questMap");
-      map.innerHTML = "";
-      activities.forEach((act, idx) => {
-        const node = document.createElement("div");
-        node.className = "quest-node";
-        node.innerHTML = `<span class="node-num">${idx+1}</span>`;
-        if (userProgress.completed[idx]) {
-          node.classList.add("completed");
-          node.innerHTML += `<span class="node-icon">✅</span>`;
-        } else if (!userProgress.unlocked[idx]) {
-          node.classList.add("locked");
-          node.innerHTML += `<span class="node-icon">🔒</span>`;
-        } else {
-          node.innerHTML += `<span class="node-icon">🗝️</span>`;
-        }
-        node.title = act.title;
-        node.onclick = () => {
-          if (!userProgress.unlocked[idx]) return;
-          loadActivity(idx);
-        };
-        map.appendChild(node);
-      });
-      document.getElementById("completedCount").textContent = userProgress.completed.filter(Boolean).length;
-    }
+];
 
-    // Load activity in iframe
-    function loadActivity(idx) {
-      // If already completed, allow replay but don't unlock further
-      document.getElementById("activityInstructions").style.display = "";
-      document.getElementById("activityInstructions").textContent = activities[idx].instructions;
-      const frame = document.getElementById("activityFrame");
-      frame.src = activities[idx].file;
-      frame.style.display = "";
-      // Listen for completion messages:
-      window.onmessage = function(event) {
-        if (event.data && event.data.type === "questComplete") {
-          // Called from child iframe (activity file)
-          handleQuestCompletion(idx, event.data.stats);
-        }
-      };
-    }
+let current = 0;
+let wrongQuestions = [];
+let correctCount = 0;
+let totalWrongGuesses = 0;
+let gemsCount = 0;
+let startTime;
+let timerInterval;
+let playerName = "";
+let playerDept = "";
+let selectedOption = null;
 
-    // Completion popup handling
-    function handleQuestCompletion(idx, stats) {
-      userProgress.completed[idx] = true;
-      userProgress.streak += 1;
-      userProgress.unlocked[idx+1] = true; // unlock next
-      // Badge logic (demo)
-      if (userProgress.streak === 3) userProgress.badges.push("3 Streak! 🥇");
-      saveProgress();
-      updateProfile();
-      renderQuestMap();
-      // Show completion popup
-      document.getElementById("completionPopup").style.display = "flex";
-      document.getElementById("questStats").innerHTML =
-        `<p>You completed: <b>${activities[idx].title}</b></p>
-        <p>Your Score: ${stats.score || "—"}</p>
-        <p>Time Taken: ${stats.time || "—"} seconds</p>
-        <p>Streak: ${userProgress.streak}</p>
-        ${userProgress.badges.length ? `<p>Badges: ${userProgress.badges.join(", ")}</p>` : ""}`;
-      // Hide activity
-      document.getElementById("activityFrame").style.display = "none";
-      document.getElementById("activityInstructions").style.display = "none";
-    }
-    function proceedToNextQuest() {
-      document.getElementById("completionPopup").style.display = "none";
-      renderQuestMap();
-      updateProfile();
-    }
+const questionEl = document.getElementById("question");
+const dragOptionsEl = document.getElementById("dragOptions");
+const dropContainerEl = document.getElementById("dropContainer");
+const timerEl = document.getElementById("timer");
+const gemsCounterEl = document.getElementById("gemsCounter");
+const progressTracker = document.getElementById("progressTracker");
+const scoreCard = document.getElementById("scoreCard");
+const restartBtn = document.getElementById("restartBtn");
 
-    // Profile update
-    function updateProfile() {
-      document.getElementById("profileName").textContent = userProgress.name || "—";
-      document.getElementById("profileBadges").textContent = userProgress.badges.join(", ") || "—";
-      document.getElementById("profileStreak").textContent = userProgress.streak;
-      document.getElementById("completedCount").textContent = userProgress.completed.filter(Boolean).length;
+function beginQuiz() {
+  const nameField = document.getElementById("nameInput");
+  const deptField = document.getElementById("departmentSelect");
+
+  if (!nameField.value.trim()) { alert("Please enter your name!"); return; }
+  if (!deptField.value) { alert("Please select your department!"); return; }
+
+  playerName = nameField.value.trim();
+  playerDept = deptField.value;
+
+  document.getElementById("nameForm").style.display = "none";
+  document.getElementById("quizContent").style.display = "block";
+  startQuiz();
+  updateProgress();
+
+}
+
+function startQuiz() {
+  current = 0;
+  correctCount = 0;
+  totalWrongGuesses = 0;
+  gemsCount = 0;
+  startTime = Date.now();
+  timerEl.innerText = "⏳ 0s";
+  gemsCounterEl.innerText = `💎 0`;
+  scoreCard.innerHTML = "";
+  restartBtn.style.display = "none";
+  loadQuestion();
+  startTimer();
+}
+
+function updateProgress() {
+  // Show total pending questions = remaining in quizData plus queued wrongQuestions
+  const totalPending = quizData.length + wrongQuestions.length;
+  // current is 0-based; shown index should be min(current+1, totalPending)
+  const shownIndex = Math.min(current + 1, totalPending === 0 ? 0 : totalPending);
+  // If quiz hasn't started, show 0 of totalPending
+  const displayIndex = (quizData.length === 0 && wrongQuestions.length === 0) ? 0 : current + 1;
+  progressTracker.innerText = `📍 ${displayIndex} of ${totalPending}`;
+}
+
+
+function loadQuestion() {
+  if (current >= quizData.length) return showScore();
+  selectedOption = null;
+  const data = quizData[current];
+  updateProgress();
+
+  dragOptionsEl.innerHTML = "";
+  dropContainerEl.innerHTML = "";
+
+  const shuffledAnswers = [...data.answers].sort(() => Math.random() - 0.5);
+
+  shuffledAnswers.forEach((ans) => {
+    const div = document.createElement("div");
+    div.classList.add("drag-item");
+    div.innerText = ans;
+    div.onclick = () => selectOption(div);
+    dragOptionsEl.appendChild(div);
+  });
+
+  data.questionItems.forEach((item) => {
+    const drop = document.createElement("div");
+    drop.classList.add("drop-zone");
+    drop.innerText = item.word;
+    drop.dataset.answer = item.answer;
+    drop.onclick = () => placeOption(drop);
+    dropContainerEl.appendChild(drop);
+dropContainerEl.appendChild(document.createTextNode(" "));
+  });
+}
+
+function selectOption(div) {
+  if (div.style.display === "none") return;
+  if (selectedOption) selectedOption.classList.remove("selected");
+  selectedOption = div;
+  div.classList.add("selected");
+}
+
+function placeOption(dropZone) {
+  if (!selectedOption) return;
+
+  const answer = selectedOption.innerText;
+  const correctAnswer = dropZone.dataset.answer;
+  const currentText = dropZone.innerText;
+
+  if (correctAnswer === answer) {
+    correctCount++;
+    gemsCount++;
+    
+    // Create sparkle effect
+    createSparkleEffect(dropZone);
+    
+    // Pulse the gem counter
+    gemsCounterEl.classList.add('gem-counter-pulse');
+    setTimeout(() => gemsCounterEl.classList.remove('gem-counter-pulse'), 400);
+    
+    gemsCounterEl.innerText = `💎 ${gemsCount}`;
+
+    // Replace blank with correct answer visually
+    if (currentText.includes("___")) {
+      dropZone.innerHTML = currentText.replace("___", `<strong style="color:#00ff88;">${answer}</strong>`);
+    } else {
+      dropZone.innerHTML = `${currentText} <strong style="color:#00ff88;">${answer}</strong>`;
     }
 
-    // Load on start
-    loadProgress();
-    if (userProgress.name) {
-      document.getElementById("profileName").textContent = userProgress.name;
-      document.getElementById("landingPage").style.display = "none";
-      document.querySelector(".main-container").style.display = "";
-      renderQuestMap();
-      updateProfile();
-    }
+    dropZone.classList.add("correct", "filled");
+    selectedOption.style.display = "none";
+  } else {
+    totalWrongGuesses++;
+    gemsCount--;
+    gemsCounterEl.innerText = `💎 ${gemsCount}`;
+    dropZone.classList.add("wrong");
+    setTimeout(() => dropZone.classList.remove("wrong"), 600);
 
-    // For demo: define questComplete messaging in your activity files:
-    // window.parent.postMessage({type: "questComplete", stats: {score: 9, time: 45}}, "*");
-    // Place this in your activity HTML's showScore() or completion logic.
+    // Add the entire current question back to wrongQuestions if not already added
+    const currentData = quizData[current];
+  if (!wrongQuestions.includes(currentData)) {
+  wrongQuestions.push(currentData);
+  // Immediately reflect the queued question in the counter
+  updateProgress();
+}
+  }
 
-  </script>
+  selectedOption.classList.remove("selected");
+  selectedOption = null;
+
+  // Check if all blanks for current question are filled
+  const remaining = document.querySelectorAll(".drop-zone:not(.filled)").length;
+if (remaining === 0) {
+  setTimeout(() => {
+    current++;
+
+   if (current >= quizData.length) {
+  if (wrongQuestions.length > 0) {
+    quizData.push(...wrongQuestions);
+    wrongQuestions = [];
+
+    // ✅ Defer counter update to next frame so total updates correctly
+    requestAnimationFrame(updateProgress);
+  }
+}
+
+    // ✅ Also refresh counter on next question load
+    loadQuestion();
+  }, 800);
+}
+}
+
+function createSparkleEffect(element) {
+  const rect = element.getBoundingClientRect();
+  const container = document.getElementById('dropContainer');
+  
+  // Create multiple sparks
+  const sparkCount = 8;
+  for (let i = 0; i < sparkCount; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'gem-spark';
+    spark.innerText = ['💎', '✨', '⭐'][Math.floor(Math.random() * 3)];
+    
+    // Position relative to the drop zone
+    spark.style.position = 'absolute';
+    spark.style.left = `${rect.left - container.getBoundingClientRect().left + rect.width / 2}px`;
+    spark.style.top = `${rect.top - container.getBoundingClientRect().top + rect.height / 2}px`;
+    
+    // Random horizontal spread
+    const randomX = (Math.random() - 0.5) * 100;
+    spark.style.setProperty('--random-x', `${randomX}px`);
+    
+    container.appendChild(spark);
+    
+    // Remove after animation
+    setTimeout(() => spark.remove(), 1000);
+  }
+}
+
+function showScore() {
+  // If there are still wrong questions pending, replay them first
+  if (wrongQuestions.length > 0) {
+    quizData.push(...wrongQuestions);
+    wrongQuestions = [];
+    current = quizData.length - wrongQuestions.length - 1; // ensure next question loads properly
+    return loadQuestion(); // stop here and resume quiz
+  }
+
+  clearInterval(timerInterval);
+  const totalTime = Math.floor((Date.now() - startTime) / 1000);
+
+  questionEl.innerText = "🎉 Quiz Completed!";
+  dragOptionsEl.innerHTML = "";
+  dropContainerEl.innerHTML = "";
+  progressTracker.innerText = "";
+  scoreCard.innerHTML = `
+    <p>👤 Player: ${playerName}</p>
+     <button onclick="downloadPDFReport()" style="margin-top: 1rem; padding: 0.7rem 2rem; background-color: #4CAF50; border: none; border-radius: 10px; cursor: pointer; color: white; font-size: 1rem;">📥 Download PDF Report</button>
+  <p>✅ All Questions: Answered Correctly on First Attempt!</p> 
+    <p>✅ Correct Answers: ${correctCount}</p>
+    <p>❌ Wrong Attempts: ${totalWrongGuesses}</p>
+    <p>💎 Final Gems: ${gemsCount}</p>
+    <p>⏱️ Time Taken: ${totalTime} seconds</p>
+  `;
+  restartBtn.style.display = "inline-block";
+  progressTracker.innerText = "";
+
+
+  // --- SEND RESULTS TO GOOGLE SHEET ---
+  fetch("https://script.google.com/macros/s/AKfycbxA0lRkERWFt2cYfmm04IQioaG4-21k5VFF5CFKP30zyVaJXM5_27PL3v8JIZEweK3u/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: playerName,
+      correct: correctCount,
+      wrong: totalWrongGuesses,
+      time: totalTime,
+      department: playerDept,
+      questId: "Quest 20"
+    })
+  });
+}
+
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime)/1000);
+    timerEl.innerText = `⏳ ${elapsed}s`;
+  }, 1000);
+}
+
+function downloadPDFReport() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const totalTime = Math.floor((Date.now() - startTime) / 1000);
+  const reportDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+  // --- HEADER ---
+  doc.setFillColor(25, 25, 60);
+  doc.rect(0, 0, 210, 45, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(18);
+  doc.text('SRM VALLIAMMAI ENGINEERING COLLEGE', 105, 16, { align: 'center' });
+  doc.setFontSize(12);
+  doc.setFont('times', 'italic');
+  doc.text('(Autonomous)', 105, 23, { align: 'center' });
+  doc.setFontSize(15);
+  doc.setFont('times', 'normal');
+  doc.text('Department of English', 105, 31, { align: 'center' });
+  doc.setFontSize(14);
+  doc.setFont('times', 'bold');
+  doc.setTextColor(212, 175, 55);
+  doc.text('Quest Performance Report', 105, 39, { align: 'center' });
+
+  // --- STUDENT INFO ---
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.text('CANDIDATE INFORMATION', 20, 55);
+  doc.autoTable({
+    startY: 58,
+    body: [
+      ['Student Name', playerName],
+      ['Department', playerDept],
+      ['Quest ID', 'Quest 20'],
+      ['Completed On', reportDate]
+    ],
+    theme: 'plain',
+    styles: { fontSize: 10, font: 'times', cellPadding: 3 },
+    columnStyles: {
+      0: { fontStyle: 'bold', cellWidth: 60, textColor: [70, 70, 70] },
+      1: { cellWidth: 120 }
+    },
+    margin: { left: 20, right: 20 }
+  });
+
+  // --- PERFORMANCE SUMMARY ---
+  let y = doc.lastAutoTable.finalY + 10;
+  doc.setFont('times', 'bold');
+  doc.text('PERFORMANCE SUMMARY', 20, y);
+  y += 4;
+  doc.autoTable({
+    startY: y + 3,
+    body: [
+      ['Total Questions', quizData.length.toString()],
+      ['Correct Answers', correctCount.toString()],
+      ['Wrong Attempts', totalWrongGuesses.toString()],
+      ['Final Gems Earned', gemsCount.toString()],
+      ['Total Time', `${Math.floor(totalTime / 60)}m ${totalTime % 60}s`]
+    ],
+    theme: 'grid',
+    styles: { fontSize: 10, font: 'times', cellPadding: 3 },
+    margin: { left: 20, right: 20 }
+  });
+
+  // --- QUESTION BANK SECTION ---
+  y = doc.lastAutoTable.finalY + 12;
+  if (y > 250) { doc.addPage(); y = 20; }
+  doc.setFont('times', 'bold');
+  doc.text('QUESTION BANK WITH CORRECT ANSWERS', 20, y);
+  y += 6;
+
+  quizData.forEach((item, i) => {
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setFont('times', 'bold');
+    doc.setTextColor(25, 25, 60);
+    doc.text(`Question ${i + 1}:`, 20, y);
+    y += 6;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('times', 'normal');
+    item.questionItems.forEach((qItem, j) => {
+      const questionText = `${j + 1}. ${qItem.word.replace('___', '____')} `;
+      const answerText = `Answer: ${qItem.answer}`;
+      const lines = doc.splitTextToSize(questionText, 160);
+      doc.text(lines, 25, y);
+      y += lines.length * 5;
+      doc.setTextColor(0, 128, 0);
+      doc.text(answerText, 30, y);
+      doc.setTextColor(0, 0, 0);
+      y += 7;
+    });
+    y += 3;
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.3);
+    doc.line(20, y, 190, y);
+    y += 5;
+  });
+
+  // --- FOOTER ---
+  doc.setDrawColor(184, 134, 11);
+  doc.setLineWidth(0.5);
+  doc.line(20, 280, 190, 280);
+  doc.setFontSize(8);
+  doc.setTextColor(128, 128, 128);
+  doc.setFont('times', 'italic');
+  doc.text('This is a system-generated report', 105, 287, { align: 'center' });
+
+  const cleanName = playerName.replace(/[^a-zA-Z0-9]/g, '_');
+  doc.save(`${cleanName}_Quest20_Report.pdf`);
+}
+
+restartBtn.onclick = () => {
+  document.getElementById("quizContent").style.display = "none";
+  document.getElementById("nameForm").style.display = "block";
+  document.getElementById("nameInput").value = "";
+};
+</script>
 </body>
 </html>
