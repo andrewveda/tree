@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tap-to-Match Quiz 🌌</title>
+<title>Tap-to-Match Cloze Quiz 🌌</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
 
 <style>
   body {
@@ -24,6 +23,7 @@
     margin: 2rem auto;
     background: rgba(255, 255, 240, 0.85);
     padding: 2rem;
+    padding-top: 4rem; /* Add padding for header */
     border-radius: 15px;
     border: 1px solid #d2b48c;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -39,8 +39,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem; /* Increased margin */
     justify-content: center;
+    padding: 1rem;
+    border-bottom: 2px dashed #d2b48c;
   }
 
   .drag-item {
@@ -62,39 +64,62 @@
   .drag-item.selected {
     border: 2px solid #8b7355;
     background: #f0dba5;
+    transform: scale(1.02);
   }
 
   .drop-container {
-    display: inline;
     text-align: left;
-    line-height: 2;
+    line-height: 2.5; /* Increased line-height for readability */
+    font-size: 1.3rem; /* Set base font size for the passage */
+    color: #3b2f1e;
   }
 
   .drop-zone {
-    display: inline;
-    border: none;
-    padding: 0;
+    display: inline-block;
+    border: 1px dashed #a1886f;
+    padding: 0.2rem 0.8rem;
     margin: 0 0.2rem;
     cursor: pointer;
-    background: none;
+    background: #fffdf6;
     color: #5b442a;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 5px;
+    min-width: 60px; /* Give it a minimum size */
+    text-align: center;
+    transition: all 0.2s ease;
+    vertical-align: middle; /* Align with text */
+  }
+
+  .drop-zone:hover {
+    background: #f7e7c4;
   }
 
   .drop-zone.filled {
-  background-color: transparent;
-  border: none;
-  color: #228b22;
-}
+    border: 1px solid transparent;
+    background: none;
+    color: #228b22; /* correct color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Revert font */
+    font-weight: bold;
+    padding: 0.2rem 0.2rem; /* Reduce padding once filled */
+    min-width: unset;
+    cursor: default;
+  }
 
   .correct {
     color: #228b22 !important; /* soft natural green */
-    font-weight: bold;
   }
 
   .wrong {
-    color: #b22222 !important; /* muted brick red */
-    font-weight: bold;
+    border-color: #b22222 !important; /* muted brick red */
+    /* Add a little shake animation */
+    animation: shake 0.5s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
   }
 
   @keyframes sparkle {
@@ -122,6 +147,7 @@
     pointer-events: none;
     font-size: 1.5rem;
     animation: sparkle 1s ease-out forwards;
+    z-index: 20; /* Ensure sparks are on top */
   }
 
   .gem-counter-pulse {
@@ -135,9 +161,10 @@
   }
 
   #timer, #gemsCounter, #progressTracker {
-    font-size: 1rem;
+    font-size: 1.1rem; /* Slightly larger */
     margin-bottom: 1rem;
     color: #6b4f33;
+    font-weight: 500;
   }
 
   #restartBtn {
@@ -155,17 +182,35 @@
   #restartBtn:hover {
     background-color: #c9a96b;
   }
+  
+  #startQuizBtn {
+    padding: 0.7rem 2rem;
+    font-size: 1.1rem;
+    background-color: #8b7355;
+    border: 1px solid #5b442a;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    transition: background-color 0.2s ease;
+  }
+  #startQuizBtn:hover {
+    background-color: #6b5a43;
+  }
+
 
   #nameForm {
     margin-bottom: 1.5rem;
   }
 
-  #nameInput {
-    padding: 0.5rem;
+  #nameInput, #departmentSelect {
+    display: block;
+    width: 90%;
+    max-width: 300px;
+    margin: 1rem auto;
+    padding: 0.7rem;
     font-size: 1rem;
     border-radius: 5px;
     border: 1px solid #c2a677;
-    margin-right: 0.5rem;
     background: #fffdf6;
     color: #3b2f1e;
   }
@@ -178,7 +223,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1rem;
+    padding: 0 1.5rem; /* Increased padding */
     font-size: 1rem;
     color: #5b442a;
     z-index: 10;
@@ -204,42 +249,44 @@
 </head>
 <body>
 <div class="container" id="quizContainer">
- <div id="nameForm">
-  <input type="text" id="nameInput" placeholder="Enter your name" />
+  <div id="nameForm">
+    <input type="text" id="nameInput" placeholder="Enter your name" />
   
-  <!-- Department Selector -->
-  <select id="departmentSelect" style="display: block; width: 90%; max-width: 300px; margin: 0.5rem auto; padding: 0.7rem; font-size: 1rem; border-radius: 5px; border: none;">
-    <option value="">-- Select Department --</option>
-    <option value="Cyber Security">Cyber Security</option>
-    <option value="CSE-1">CSE-1</option>
-    <option value="CSE-2">CSE-2</option>
-    <option value="CSE-3">CSE-3</option>
-    <option value="Mechanical Engineering">Mechanical Engineering</option>
-    <option value="ECE-1">ECE-1</option>
-    <option value="ECE-2">ECE-2</option>
-    <option value="ECE-3">ECE-3</option>
-    <option value="AI DS-1">AI DS-1</option>
-    <option value="AI DS-2">AI DS-2</option>
-    <option value="Civil">Civil</option>
-    <option value="Agri">Agri</option>
-    <option value="EEE">EEE</option>
-    <option value="EIE">EIE</option>
-    <option value="Medical Electronics">Medical Electronics</option>
-    <option value="IT-1">IT-1</option>
-    <option value="IT-2">IT-2</option>
-  </select>
+    <!-- Department Selector -->
+    <select id="departmentSelect">
+      <option value="">-- Select Department --</option>
+      <option value="Cyber Security">Cyber Security</option>
+      <option value="CSE-1">CSE-1</option>
+      <option value="CSE-2">CSE-2</option>
+      <option value="CSE-3">CSE-3</option>
+      <option value="Mechanical Engineering">Mechanical Engineering</option>
+      <option value="ECE-1">ECE-1</option>
+      <option value="ECE-2">ECE-2</option>
+      <option value="ECE-3">ECE-3</option>
+      <option value="AI DS-1">AI DS-1</option>
+      <option value="AI DS-2">AI DS-2</option>
+      <option value="Civil">Civil</option>
+      <option value="Agri">Agri</option>
+      <option value="EEE">EEE</option>
+      <option value="EIE">EIE</option>
+      <option value="Medical Electronics">Medical Electronics</option>
+      <option value="IT-1">IT-1</option>
+      <option value="IT-2">IT-2</option>
+    </select>
 
-  <button onclick="beginQuiz()">Start Quiz</button>
-</div>
+    <button id="startQuizBtn" onclick="beginQuiz()">Start Quiz</button>
+  </div>
 
 
   <div id="quizContent" style="display:none;">
-   <div class="quiz-header">
-  <div id="timer">⏳ 0s</div>
-  <div id="gemsCounter">💎 0</div>
-  <div id="progressTracker">📍 1 of 1</div>
-</div>
-    <div class="question" id="question"></div>
+    <div class="quiz-header">
+      <div id="timer">⏳ 0s</div>
+      <div id="gemsCounter">💎 0</div>
+      <div id="progressTracker">📍 1 of 1</div>
+    </div>
+    <!-- Question title removed, as the passage is the question
+    <div class="question" id="question"></div> 
+    -->
     <div class="drag-options" id="dragOptions"></div>
     <div class="drop-container" id="dropContainer"></div>
     <div id="scoreCard"></div>
@@ -248,29 +295,31 @@
 </div>
 
 <script>
-const quizData = [
+// --- NEW QUIZ DATA STRUCTURE ---
+const quizDataStore = [
   {
-  "questionItems": [
-    { "word": "The Lion King ___ an animated film", "answer": "is" },
-    { "word": "released in 1994. It ___ directed by Roger Allers and Rob Minkoff", "answer": "was" },
-    { "word": "and ___ by Walt Disney Pictures.", "answer": "produced" },
-    { "word": "The movie ___ beautiful songs written by Elton John and Tim Rice.", "answer": "has" }
-  ],
-  "answers": ["is", "was", "produced", "has"]
+  "passage": "Every evening, a father ___ to say good night ___ his seven-year-old son. He ___ that if he didn’t, the boy ___ have trouble falling asleep. It ___ a small routine ___ them, something they ___ shared for years. The father ___ quietly into the room, which ___ lit by a faint lamp in ___ corner.",
+  "answers": ["went", "to", "knew", "would", "was", "between", "had", "stepped", "was", "the"]
 },
 {
-  "questionItems": [
-    { "word": "The story ___ around a young lion named Simba", "answer": "revolves" },
-    { "word": "who ___ to become the king of the Pride Lands.", "answer": "struggles" },
-    { "word": "He ___ from his home after a tragedy and feels lost.", "answer": "runs" },
-    { "word": "Later, he ___ his courage and returns to face his past.", "answer": "finds" }
-  ],
-  "answers": ["revolves", "struggles", "runs", "finds"]
+  "passage": "The boy ___ waiting patiently ___ his blanket when his father entered. The air ___ still, and only the clock ___ ticking softly ___ the background. Moonlight ___ through the thin curtains and fell ___ the boy’s face. He ___ at his father with wide eyes and ___ a small smile.",
+  "answers": ["was", "under", "was", "was", "in", "shone", "upon", "looked", "gave", "him"]
+},
+{
+  "passage": "At first glance, the father ___ there ___ something unusual about his son, though he couldn’t quite put his finger ___ it. The boy ___ the same, but a grin ___ from ear to ear. “Are you all right, mate?” the father ___ softly. The boy nodded, still smiling, before he ___, “Daddy, please check ___ monsters under my bed.”",
+  "answers": ["felt", "was", "on", "looked", "stretched", "asked", "said", "for"]
+},
+{
+  "passage": "The father ___ softly and got ___ his knees. He ___ forward, lifting the edge ___ the blanket, and bent ___ the bed. “See?” he said, “There ___ nothing here.” But then, ___ the darkness, he thought he ___ movement. His breath ___ and his hands began to tremble.",
+  "answers": ["laughed", "onto", "leaned", "of", "under", "is", "in", "saw", "stopped", "to"]
+},
+{
+  "passage": "There, ___ the bed, pale and frightened, ___ his son — his real son. The boy whispered, “Daddy, there ___ someone ___ my bed.” The father froze ___ shock. His heart ___ faster as he slowly turned ___ the figure lying ___ the blanket above. He couldn’t believe what he ___ seeing.",
+  "answers": ["under", "was", "is", "on", "in", "beat", "towards", "beneath", "was"]
 }
-
-
 ];
 
+let quizData = []; // This will hold the active quiz questions
 let current = 0;
 let wrongQuestions = [];
 let correctCount = 0;
@@ -281,8 +330,10 @@ let timerInterval;
 let playerName = "";
 let playerDept = "";
 let selectedOption = null;
+let totalQuestionsInQuiz = 0; // Tracks total questions including retries
 
-const questionEl = document.getElementById("question");
+// Element cache
+// const questionEl = document.getElementById("question"); // No longer needed
 const dragOptionsEl = document.getElementById("dragOptions");
 const dropContainerEl = document.getElementById("dropContainer");
 const timerEl = document.getElementById("timer");
@@ -290,51 +341,72 @@ const gemsCounterEl = document.getElementById("gemsCounter");
 const progressTracker = document.getElementById("progressTracker");
 const scoreCard = document.getElementById("scoreCard");
 const restartBtn = document.getElementById("restartBtn");
+const quizContentEl = document.getElementById("quizContent");
+const nameFormEl = document.getElementById("nameForm");
+const nameInputEl = document.getElementById("nameInput");
+const deptSelectEl = document.getElementById("departmentSelect");
+
 
 function beginQuiz() {
-  const nameField = document.getElementById("nameInput");
-  const deptField = document.getElementById("departmentSelect");
+  if (!nameInputEl.value.trim()) { 
+    // Use a custom modal or simple visual feedback instead of alert
+    nameInputEl.style.borderColor = "red";
+    return; 
+  }
+  if (!deptSelectEl.value) { 
+    deptSelectEl.style.borderColor = "red";
+    return; 
+  }
+  // Reset border colors if validation passes
+  nameInputEl.style.borderColor = "#c2a677";
+  deptSelectEl.style.borderColor = "#c2a677";
 
-  if (!nameField.value.trim()) { alert("Please enter your name!"); return; }
-  if (!deptField.value) { alert("Please select your department!"); return; }
+  playerName = nameInputEl.value.trim();
+  playerDept = deptSelectEl.value;
 
-  playerName = nameField.value.trim();
-  playerDept = deptField.value;
-
-  document.getElementById("nameForm").style.display = "none";
-  document.getElementById("quizContent").style.display = "block";
+  nameFormEl.style.display = "none";
+  quizContentEl.style.display = "block";
   startQuiz();
-  updateProgress();
-
 }
 
 function startQuiz() {
+  // Reset all quiz state variables
+  quizData = [...quizDataStore]; // Reset quizData from the master store
+  wrongQuestions = [];
   current = 0;
   correctCount = 0;
   totalWrongGuesses = 0;
   gemsCount = 0;
   startTime = Date.now();
+  totalQuestionsInQuiz = quizDataStore.length; // Initialize the total count
+  
+  // Reset UI elements
   timerEl.innerText = "⏳ 0s";
   gemsCounterEl.innerText = `💎 0`;
   scoreCard.innerHTML = "";
   restartBtn.style.display = "none";
+  
   loadQuestion();
   startTimer();
+  updateProgress(); // Initial progress update
 }
 
 function updateProgress() {
-  // Show total pending questions = remaining in quizData plus queued wrongQuestions
-  const totalPending = quizData.length + wrongQuestions.length;
-  // current is 0-based; shown index should be min(current+1, totalPending)
-  const shownIndex = Math.min(current + 1, totalPending === 0 ? 0 : totalPending);
-  // If quiz hasn't started, show 0 of totalPending
-  const displayIndex = (quizData.length === 0 && wrongQuestions.length === 0) ? 0 : current + 1;
-  progressTracker.innerText = `📍 ${displayIndex} of ${totalPending}`;
+  // const totalPending = (quizData.length - current) + wrongQuestions.length; // Old logic
+  // const totalQuestions = quizDataStore.length + wrongQuestions.length; // Old logic
+  
+  // New logic:
+  // totalQuestionsInQuiz is set at the start and incremented when a new wrong question is added.
+  const currentQuestionNumber = current + 1;
+  
+  progressTracker.innerText = `📍 ${currentQuestionNumber} of ${totalQuestionsInQuiz}`;
 }
 
 
+// --- REFACTORED loadQuestion ---
 function loadQuestion() {
   if (current >= quizData.length) return showScore();
+  
   selectedOption = null;
   const data = quizData[current];
   updateProgress();
@@ -342,8 +414,8 @@ function loadQuestion() {
   dragOptionsEl.innerHTML = "";
   dropContainerEl.innerHTML = "";
 
+  // 1. Shuffle and display drag options (same as before)
   const shuffledAnswers = [...data.answers].sort(() => Math.random() - 0.5);
-
   shuffledAnswers.forEach((ans) => {
     const div = document.createElement("div");
     div.classList.add("drag-item");
@@ -352,32 +424,46 @@ function loadQuestion() {
     dragOptionsEl.appendChild(div);
   });
 
-  data.questionItems.forEach((item) => {
-    const drop = document.createElement("div");
-    drop.classList.add("drop-zone");
-    drop.innerText = item.word;
-    drop.dataset.answer = item.answer;
-    drop.onclick = () => placeOption(drop);
-    dropContainerEl.appendChild(drop);
-dropContainerEl.appendChild(document.createTextNode(" "));
+  // 2. Process the passage string
+  const passage = data.passage;
+  const answers = data.answers;
+  const parts = passage.split("___"); // Split the passage by the blank marker
+
+  // 3. Reconstruct the passage with interactive blanks
+  parts.forEach((part, index) => {
+    // Add the text part
+    dropContainerEl.appendChild(document.createTextNode(part));
+
+    // If there's another part, add a blank (drop-zone)
+    if (index < answers.length) {
+      const dropZone = document.createElement("button"); // Use a button for interactivity
+      dropZone.classList.add("drop-zone");
+      dropZone.innerText = "___"; // This is the visual blank
+      dropZone.dataset.answer = answers[index]; // Assign the correct answer
+      dropZone.onclick = () => placeOption(dropZone);
+      dropContainerEl.appendChild(dropZone);
+      dropContainerEl.appendChild(document.createTextNode(" ")); // Add a space
+    }
   });
 }
 
 function selectOption(div) {
-  if (div.style.display === "none") return;
+  if (div.style.display === "none") return; // Don't select hidden options
   if (selectedOption) selectedOption.classList.remove("selected");
   selectedOption = div;
   div.classList.add("selected");
 }
 
+// --- REFACTORED placeOption ---
 function placeOption(dropZone) {
-  if (!selectedOption) return;
+  // If no option is selected, or blank is already filled, do nothing
+  if (!selectedOption || dropZone.classList.contains("filled")) return;
 
   const answer = selectedOption.innerText;
   const correctAnswer = dropZone.dataset.answer;
-  const currentText = dropZone.innerText;
 
   if (correctAnswer === answer) {
+    // --- CORRECT ---
     correctCount++;
     gemsCount++;
     
@@ -390,59 +476,58 @@ function placeOption(dropZone) {
     
     gemsCounterEl.innerText = `💎 ${gemsCount}`;
 
-    // Replace blank with correct answer visually
-    if (currentText.includes("___")) {
-      dropZone.innerHTML = currentText.replace("___", `<strong style="color:#00ff88;">${answer}</strong>`);
-    } else {
-      dropZone.innerHTML = `${currentText} <strong style="color:#00ff88;">${answer}</strong>`;
-    }
-
+    // Replace blank with correct answer
+    dropZone.innerText = answer;
     dropZone.classList.add("correct", "filled");
-    selectedOption.style.display = "none";
+    dropZone.disabled = true; // Disable the button
+    
+    selectedOption.style.display = "none"; // Hide the used option
+  
   } else {
+    // --- WRONG ---
     totalWrongGuesses++;
     gemsCount--;
     gemsCounterEl.innerText = `💎 ${gemsCount}`;
+    
+    // Flash the drop zone red
     dropZone.classList.add("wrong");
     setTimeout(() => dropZone.classList.remove("wrong"), 600);
 
     // Add the entire current question back to wrongQuestions if not already added
     const currentData = quizData[current];
-  if (!wrongQuestions.includes(currentData)) {
-  wrongQuestions.push(currentData);
-  // Immediately reflect the queued question in the counter
-  updateProgress();
-}
+    if (!wrongQuestions.includes(currentData)) {
+      wrongQuestions.push(currentData);
+      totalQuestionsInQuiz++; // Increment the total
+      updateProgress(); // Update immediately
+    }
   }
 
+  // Deselect the option
   selectedOption.classList.remove("selected");
   selectedOption = null;
 
-  // Check if all blanks for current question are filled
-  const remaining = document.querySelectorAll(".drop-zone:not(.filled)").length;
-if (remaining === 0) {
-  setTimeout(() => {
-    current++;
+  // Check if all blanks for the current question are filled
+  const remaining = dropContainerEl.querySelectorAll(".drop-zone:not(.filled)").length;
+  
+  if (remaining === 0) {
+    // All blanks filled, move to the next question
+    setTimeout(() => {
+      current++;
 
-   if (current >= quizData.length) {
-  if (wrongQuestions.length > 0) {
-    quizData.push(...wrongQuestions);
-    wrongQuestions = [];
-
-    // ✅ Defer counter update to next frame so total updates correctly
-    requestAnimationFrame(updateProgress);
+      // If we've finished the initial set, check if there are wrong questions to retry
+      if (current >= quizData.length && wrongQuestions.length > 0) {
+        quizData.push(...wrongQuestions); // Add wrong questions to the end
+        wrongQuestions = []; // Clear the retry queue
+      }
+      
+      loadQuestion(); // Load the next question (or show score)
+    }, 800); // Wait a moment to show the last correct answer
   }
-}
-
-    // ✅ Also refresh counter on next question load
-    loadQuestion();
-  }, 800);
-}
 }
 
 function createSparkleEffect(element) {
   const rect = element.getBoundingClientRect();
-  const container = document.getElementById('dropContainer');
+  const containerRect = quizContainer.getBoundingClientRect(); // Use main container
   
   // Create multiple sparks
   const sparkCount = 8;
@@ -451,16 +536,16 @@ function createSparkleEffect(element) {
     spark.className = 'gem-spark';
     spark.innerText = ['💎', '✨', '⭐'][Math.floor(Math.random() * 3)];
     
-    // Position relative to the drop zone
+    // Position relative to the main container
     spark.style.position = 'absolute';
-    spark.style.left = `${rect.left - container.getBoundingClientRect().left + rect.width / 2}px`;
-    spark.style.top = `${rect.top - container.getBoundingClientRect().top + rect.height / 2}px`;
+    spark.style.left = `${rect.left - containerRect.left + rect.width / 2}px`;
+    spark.style.top = `${rect.top - containerRect.top + rect.height / 2}px`;
     
     // Random horizontal spread
     const randomX = (Math.random() - 0.5) * 100;
     spark.style.setProperty('--random-x', `${randomX}px`);
     
-    container.appendChild(spark);
+    quizContainer.appendChild(spark); // Append to main container
     
     // Remove after animation
     setTimeout(() => spark.remove(), 1000);
@@ -468,35 +553,32 @@ function createSparkleEffect(element) {
 }
 
 function showScore() {
-  // If there are still wrong questions pending, replay them first
-  if (wrongQuestions.length > 0) {
-    quizData.push(...wrongQuestions);
-    wrongQuestions = [];
-    current = quizData.length - wrongQuestions.length - 1; // ensure next question loads properly
-    return loadQuestion(); // stop here and resume quiz
-  }
-
   clearInterval(timerInterval);
   const totalTime = Math.floor((Date.now() - startTime) / 1000);
 
-  questionEl.innerText = "🎉 Quiz Completed!";
+  // questionEl.innerText = "🎉 Quiz Completed!"; // No longer using questionEl
   dragOptionsEl.innerHTML = "";
-  dropContainerEl.innerHTML = "";
-  progressTracker.innerText = "";
+  dropContainerEl.innerHTML = `<h2 style="text-align:center;">🎉 Quiz Completed!</h2>`;
+  progressTracker.innerText = "Done!";
+  
+  // Determine success message
+  const successMessage = (totalWrongGuesses === 0) 
+    ? "<p>✅ Flawless! All questions answered correctly on the first attempt!</p>"
+    : `<p>✅ Correct Answers (total): ${correctCount}</p>
+       <p>❌ Wrong Attempts (total): ${totalWrongGuesses}</p>`;
+
   scoreCard.innerHTML = `
-    <p>👤 Player: ${playerName}</p>
-     <button onclick="downloadPDFReport()" style="margin-top: 1rem; padding: 0.7rem 2rem; background-color: #4CAF50; border: none; border-radius: 10px; cursor: pointer; color: white; font-size: 1rem;">📥 Download PDF Report</button>
-  <p>✅ All Questions: Answered Correctly on First Attempt!</p> 
-    <p>✅ Correct Answers: ${correctCount}</p>
-    <p>❌ Wrong Attempts: ${totalWrongGuesses}</p>
+    <p>👤 Player: <strong>${playerName}</strong> (${playerDept})</p>
+    ${successMessage}
     <p>💎 Final Gems: ${gemsCount}</p>
     <p>⏱️ Time Taken: ${totalTime} seconds</p>
+    <button onclick="downloadPDFReport()" style="margin-top: 1rem; padding: 0.7rem 2rem; background-color: #4CAF50; border: none; border-radius: 10px; cursor: pointer; color: white; font-size: 1rem;">📥 Download PDF Report</button>
   `;
   restartBtn.style.display = "inline-block";
-  progressTracker.innerText = "";
 
 
   // --- SEND RESULTS TO GOOGLE SHEET ---
+  // This remains unchanged
   fetch("https://script.google.com/macros/s/AKfycbxA0lRkERWFt2cYfmm04IQioaG4-21k5VFF5CFKP30zyVaJXM5_27PL3v8JIZEweK3u/exec", {
     method: "POST",
     mode: "no-cors",
@@ -507,19 +589,21 @@ function showScore() {
       wrong: totalWrongGuesses,
       time: totalTime,
       department: playerDept,
-      questId: "Quest 20"
+      questId: "Quest 20 (Cloze)" // Updated Quest ID
     })
   });
 }
 
 
 function startTimer() {
+  clearInterval(timerInterval); // Clear any existing timer
   timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime)/1000);
     timerEl.innerText = `⏳ ${elapsed}s`;
   }, 1000);
 }
 
+// --- REFACTORED downloadPDFReport ---
 function downloadPDFReport() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -554,7 +638,7 @@ function downloadPDFReport() {
     body: [
       ['Student Name', playerName],
       ['Department', playerDept],
-      ['Quest ID', 'Quest 20'],
+      ['Quest ID', 'Quest 20 (Cloze)'],
       ['Completed On', reportDate]
     ],
     theme: 'plain',
@@ -574,9 +658,9 @@ function downloadPDFReport() {
   doc.autoTable({
     startY: y + 3,
     body: [
-      ['Total Questions', quizData.length.toString()],
-      ['Correct Answers', correctCount.toString()],
-      ['Wrong Attempts', totalWrongGuesses.toString()],
+      ['Total Questions', quizDataStore.length.toString()], // Use master store length
+      ['Correct Answers (Total)', correctCount.toString()],
+      ['Wrong Attempts (Total)', totalWrongGuesses.toString()],
       ['Final Gems Earned', gemsCount.toString()],
       ['Total Time', `${Math.floor(totalTime / 60)}m ${totalTime % 60}s`]
     ],
@@ -585,37 +669,43 @@ function downloadPDFReport() {
     margin: { left: 20, right: 20 }
   });
 
-  // --- QUESTION BANK SECTION ---
+  // --- QUESTION BANK SECTION (SIMPLIFIED) ---
   y = doc.lastAutoTable.finalY + 12;
   if (y > 250) { doc.addPage(); y = 20; }
   doc.setFont('times', 'bold');
   doc.text('QUESTION BANK WITH CORRECT ANSWERS', 20, y);
   y += 6;
 
-  quizData.forEach((item, i) => {
+  quizDataStore.forEach((item, i) => {
     if (y > 260) { doc.addPage(); y = 20; }
+    
+    // Reconstruct the full passage with answers
+    let fullPassage = item.passage;
+    item.answers.forEach(ans => {
+      // Use a special color/font for the answer in the PDF
+      // jspdf-autotable doesn't make this easy in a single text block.
+      // We'll just put the answer in brackets [ ].
+      fullPassage = fullPassage.replace("___", ` [${ans}] `);
+    });
+
     doc.setFontSize(11);
     doc.setFont('times', 'bold');
     doc.setTextColor(25, 25, 60);
     doc.text(`Question ${i + 1}:`, 20, y);
     y += 6;
+    
     doc.setTextColor(0, 0, 0);
     doc.setFont('times', 'normal');
-    item.questionItems.forEach((qItem, j) => {
-      const questionText = `${j + 1}. ${qItem.word.replace('___', '____')} `;
-      const answerText = `Answer: ${qItem.answer}`;
-      const lines = doc.splitTextToSize(questionText, 160);
-      doc.text(lines, 25, y);
-      y += lines.length * 5;
-      doc.setTextColor(0, 128, 0);
-      doc.text(answerText, 30, y);
-      doc.setTextColor(0, 0, 0);
-      y += 7;
-    });
+    
+    // Add the reconstructed passage
+    const lines = doc.splitTextToSize(fullPassage, 160); // 160 = width
+    doc.text(lines, 25, y);
+    y += lines.length * 5; // Adjust y based on number of lines
+    
     y += 3;
     doc.setDrawColor(230, 230, 230);
     doc.setLineWidth(0.3);
-    doc.line(20, y, 190, y);
+    doc.line(20, y, 190, y); // Separator line
     y += 5;
   });
 
@@ -633,9 +723,10 @@ function downloadPDFReport() {
 }
 
 restartBtn.onclick = () => {
-  document.getElementById("quizContent").style.display = "none";
-  document.getElementById("nameForm").style.display = "block";
-  document.getElementById("nameInput").value = "";
+  quizContentEl.style.display = "none";
+  nameFormEl.style.display = "block";
+  nameInputEl.value = ""; // Clear name field
+  deptSelectEl.value = ""; // Reset department dropdown
 };
 </script>
 </body>
