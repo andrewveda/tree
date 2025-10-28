@@ -15,18 +15,32 @@
     background: radial-gradient(ellipse at center, #f4ecd8 0%, #e8d9b5 100%);
     color: #3b2f1e;
     text-align: center;
+    /* Full screen properties */
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
   }
 
   .container {
     position: relative;
-    max-width: 900px;
-    margin: 2rem auto;
+    /* max-width: 900px; */ /* REMOVED */
+    /* margin: 2rem auto; */ /* REMOVED */
     background: rgba(255, 255, 240, 0.85);
     padding: 2rem;
-    padding-top: 4rem; /* Add padding for header */
-    border-radius: 15px;
-    border: 1px solid #d2b48c;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding-top: 5rem; /* Adjusted padding-top for header */
+    /* border-radius: 15px; */ /* REMOVED */
+    /* border: 1px solid #d2b48c; */ /* REMOVED */
+    /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); */ /* REMOVED */
+
+    /* --- ADDED FOR FULL SCREEN --- */
+    width: 100vw;
+    min-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    box-sizing: border-box; /* Important: includes padding in 100% width/height */
+    /* --- END FULL SCREEN --- */
   }
 
   .question {
@@ -316,7 +330,7 @@
 <script>
 // --- NEW QUIZ DATA STRUCTURE ---
 const quizDataStore = [
-  {
+ {
   "passage": "A father ___ into his son’s room ___ say goodnight ___ him. He ___ this every night before going ___ bed himself, as part ___ their small bedtime routine. Both of them ___ it very much. The father ___ that if he ever ___ to say goodnight ___ his son, the boy ___ have trouble ___ asleep. That night, the house ___ quiet. The lights ___ dim, and there ___ a heavy stillness ___ the air. The father slowly ___ through the hallway and ___ open the door ___ his son’s room. The boy ___ already tucked ___ his blanket, waiting ___ him as usual. A small lamp ___ the bedside table ___ the room a soft, yellow glow that ___ gently ___ the walls. Everything ___ peaceful at first. \n\nBut when the father ___ more closely ___ his son, he ___ something ___ different about him. The boy ___ the same — the same small face, the same hair, the same pyjamas — yet something ___ not right ___ his expression. The boy ___ a grin that ___ from ear to ear. It ___ too wide, too still, too unnatural ___ a child. “Are you all right, son?” the father ___ softly, standing ___ the bed. The boy ___, still smiling in that strange way, his eyes ___ straight ___ his father without blinking. Then he ___, “Daddy, please check ___ monsters under my bed.” \n\nThe father ___ quietly and moved ___ the floor. It ___ not the first time his son ___ said that. “All right,” he ___ kindly, “let’s make sure there ___ no monsters ___ there tonight.” He ___ down ___ his knees and ___ the blanket carefully ___ the edge ___ the bed. He ___ forward and ___ beneath it, expecting ___ see only dust, a few old toys, or maybe a lost sock behind a box. But instead, he ___ another face staring ___ at him. The face was pale, frightened, and trembling ___ the darkness. It ___ his real son. The boy ___ the bed whispered softly, \"Daddy, there’s someone ___ my bed.\"",
   "answers": [
     "went", "to", "to",
@@ -345,6 +359,7 @@ const quizDataStore = [
     "under", "on"
   ]
 }
+
 ];
 
 let quizData = []; // This will hold the active quiz questions
@@ -830,4 +845,5 @@ nextPageBtn.onclick = () => {
 </script>
 </body>
 </html>
+
 
