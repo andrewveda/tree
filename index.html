@@ -35,25 +35,27 @@
     color: #4a3b2a;
   }
 
+  /* UPDATED STYLES FOR DRAG OPTIONS */
   .drag-options {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-bottom: 2.5rem; /* Increased margin */
-    justify-content: center;
-    padding: 1rem;
+    gap: 0.5rem; /* Reduced gap for compactness */
+    margin-bottom: 2.5rem;
+    justify-content: center; /* Center-justifies the items */
+    padding: 0.8rem; /* Slightly reduced padding */
     border-bottom: 2px dashed #d2b48c;
   }
 
   .drag-item {
-    padding: 0.6rem 1.2rem;
+    padding: 0.4rem 0.9rem; /* Reduced padding for compactness */
     background: #f7e7c4;
     border: 1px solid #d2b48c;
-    border-radius: 10px;
+    border-radius: 8px; /* Slightly smaller border-radius */
     cursor: pointer;
     user-select: none;
     color: #3b2f1e;
     transition: all 0.2s ease-in-out;
+    font-size: 0.95rem; /* Slightly smaller font size */
   }
 
   .drag-item:hover {
@@ -66,6 +68,7 @@
     background: #f0dba5;
     transform: scale(1.02);
   }
+  /* END UPDATED STYLES */
 
   .drop-container {
     text-align: left;
@@ -242,6 +245,23 @@
   .quiz-header #progressTracker {
     text-align: right;
     flex: 1;
+    font-size: 0.9rem; /* Adjusted font size for new text */
+  }
+
+  #nextPageBtn {
+    margin-top: 1.5rem;
+    padding: 0.7rem 2rem;
+    font-size: 1.1rem;
+    background-color: #4CAF50; /* Green */
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s ease;
+    font-weight: bold;
+  }
+  #nextPageBtn:hover {
+    background-color: #45a049;
   }
 
 </style>
@@ -252,8 +272,7 @@
   <div id="nameForm">
     <input type="text" id="nameInput" placeholder="Enter your name" />
   
-    <!-- Department Selector -->
-    <select id="departmentSelect">
+    <!-- Department Selector --><select id="departmentSelect">
       <option value="">-- Select Department --</option>
       <option value="Cyber Security">Cyber Security</option>
       <option value="CSE-1">CSE-1</option>
@@ -286,10 +305,10 @@
     </div>
     <!-- Question title removed, as the passage is the question
     <div class="question" id="question"></div> 
-    -->
-    <div class="drag-options" id="dragOptions"></div>
+    --><div class="drag-options" id="dragOptions"></div>
     <div class="drop-container" id="dropContainer"></div>
     <div id="scoreCard"></div>
+    <button id="nextPageBtn" style="display: none;">Next &rarr;</button> 
     <button id="restartBtn" style="display: none;">Restart</button>
   </div>
 </div>
@@ -298,24 +317,33 @@
 // --- NEW QUIZ DATA STRUCTURE ---
 const quizDataStore = [
   {
-  "passage": "Every evening, a father ___ to say good night ___ his seven-year-old son. He ___ that if he didn’t, the boy ___ have trouble falling asleep. It ___ a small routine ___ them, something they ___ shared for years. The father ___ quietly into the room, which ___ lit by a faint lamp in ___ corner.",
-  "answers": ["went", "to", "knew", "would", "was", "between", "had", "stepped", "was", "the"]
-},
-{
-  "passage": "The boy ___ waiting patiently ___ his blanket when his father entered. The air ___ still, and only the clock ___ ticking softly ___ the background. Moonlight ___ through the thin curtains and fell ___ the boy’s face. He ___ at his father with wide eyes and ___ a small smile.",
-  "answers": ["was", "under", "was", "was", "in", "shone", "upon", "looked", "gave", "him"]
-},
-{
-  "passage": "At first glance, the father ___ there ___ something unusual about his son, though he couldn’t quite put his finger ___ it. The boy ___ the same, but a grin ___ from ear to ear. “Are you all right, mate?” the father ___ softly. The boy nodded, still smiling, before he ___, “Daddy, please check ___ monsters under my bed.”",
-  "answers": ["felt", "was", "on", "looked", "stretched", "asked", "said", "for"]
-},
-{
-  "passage": "The father ___ softly and got ___ his knees. He ___ forward, lifting the edge ___ the blanket, and bent ___ the bed. “See?” he said, “There ___ nothing here.” But then, ___ the darkness, he thought he ___ movement. His breath ___ and his hands began to tremble.",
-  "answers": ["laughed", "onto", "leaned", "of", "under", "is", "in", "saw", "stopped", "to"]
-},
-{
-  "passage": "There, ___ the bed, pale and frightened, ___ his son — his real son. The boy whispered, “Daddy, there ___ someone ___ my bed.” The father froze ___ shock. His heart ___ faster as he slowly turned ___ the figure lying ___ the blanket above. He couldn’t believe what he ___ seeing.",
-  "answers": ["under", "was", "is", "on", "in", "beat", "towards", "beneath", "was"]
+  "passage": "A father ___ into his son’s room ___ say goodnight ___ him. He ___ this every night before going ___ bed himself, as part ___ their small bedtime routine. Both of them ___ it very much. The father ___ that if he ever ___ to say goodnight ___ his son, the boy ___ have trouble ___ asleep. That night, the house ___ quiet. The lights ___ dim, and there ___ a heavy stillness ___ the air. The father slowly ___ through the hallway and ___ open the door ___ his son’s room. The boy ___ already tucked ___ his blanket, waiting ___ him as usual. A small lamp ___ the bedside table ___ the room a soft, yellow glow that ___ gently ___ the walls. Everything ___ peaceful at first. \n\nBut when the father ___ more closely ___ his son, he ___ something ___ different about him. The boy ___ the same — the same small face, the same hair, the same pyjamas — yet something ___ not right ___ his expression. The boy ___ a grin that ___ from ear to ear. It ___ too wide, too still, too unnatural ___ a child. “Are you all right, son?” the father ___ softly, standing ___ the bed. The boy ___, still smiling in that strange way, his eyes ___ straight ___ his father without blinking. Then he ___, “Daddy, please check ___ monsters under my bed.” \n\nThe father ___ quietly and moved ___ the floor. It ___ not the first time his son ___ said that. “All right,” he ___ kindly, “let’s make sure there ___ no monsters ___ there tonight.” He ___ down ___ his knees and ___ the blanket carefully ___ the edge ___ the bed. He ___ forward and ___ beneath it, expecting ___ see only dust, a few old toys, or maybe a lost sock behind a box. But instead, he ___ another face staring ___ at him. The face was pale, frightened, and trembling ___ the darkness. It ___ his real son. The boy ___ the bed whispered softly, \"Daddy, there’s someone ___ my bed.\"",
+  "answers": [
+    "went", "to", "to",
+    "did", "to", "of",
+    "enjoyed",
+    "knew", "forgot", "to", "would", "falling",
+    "was", "were", "was", "in",
+    "walked", "pushed", "to",
+    "was", "under", "for",
+    "on", "gave", "spread", "across",
+    "seemed",
+    "looked", "at", "felt", "was",
+    "looked", "was", "in",
+    "had", "stretched",
+    "was", "for",
+    "asked", "by",
+    "nodded", "staring", "at",
+    "said", "for",
+    "chuckled", "to",
+    "was", "had",
+    "said", "were", "under",
+    "got", "onto", "lifted", "from", "of",
+    "leaned", "peered", "to",
+    "saw", "up", "in",
+    "was",
+    "under", "on"
+  ]
 }
 ];
 
@@ -332,6 +360,11 @@ let playerDept = "";
 let selectedOption = null;
 let totalQuestionsInQuiz = 0; // Tracks total questions including retries
 
+// --- New Pagination State ---
+const blanksPerPage = 10;
+// let currentBlankPage = 0; // No longer needed as a global variable
+// --------------------------
+
 // Element cache
 // const questionEl = document.getElementById("question"); // No longer needed
 const dragOptionsEl = document.getElementById("dragOptions");
@@ -341,6 +374,7 @@ const gemsCounterEl = document.getElementById("gemsCounter");
 const progressTracker = document.getElementById("progressTracker");
 const scoreCard = document.getElementById("scoreCard");
 const restartBtn = document.getElementById("restartBtn");
+const nextPageBtn = document.getElementById("nextPageBtn"); 
 const quizContentEl = document.getElementById("quizContent");
 const nameFormEl = document.getElementById("nameForm");
 const nameInputEl = document.getElementById("nameInput");
@@ -371,35 +405,69 @@ function beginQuiz() {
 
 function startQuiz() {
   // Reset all quiz state variables
-  quizData = [...quizDataStore]; // Reset quizData from the master store
+  quizData = []; // Clear quiz data
   wrongQuestions = [];
+  
+  // --- Pre-process quizDataStore into a flat list of PAGES ---
+  quizDataStore.forEach((passageObject, passageIdx) => {
+    const totalAnswers = passageObject.answers.length;
+    const totalBlankPages = Math.ceil(totalAnswers / blanksPerPage);
+    
+    for (let i = 0; i < totalBlankPages; i++) {
+      const pageObject = {
+        originalPassage: passageObject.passage, // Full text
+        originalAnswers: passageObject.answers, // All answers
+        pageIndex: i, // Which page this is (0-based)
+        passageIndex: passageIdx, // Which passage this belongs to
+        totalPassagesInStore: quizDataStore.length,
+        totalPassagePages: totalBlankPages,
+        // Unique ID for this specific page
+        pageId: `p${passageIdx}-pg${i}` 
+      };
+      quizData.push(pageObject);
+    }
+  });
+  // ---------------------------------------------------------
+  
   current = 0;
   correctCount = 0;
   totalWrongGuesses = 0;
   gemsCount = 0;
   startTime = Date.now();
-  totalQuestionsInQuiz = quizDataStore.length; // Initialize the total count
+  totalQuestionsInQuiz = quizData.length; // Total questions is now total PAGES
+  // currentBlankPage = 0; // No longer needed
   
   // Reset UI elements
   timerEl.innerText = "⏳ 0s";
   gemsCounterEl.innerText = `💎 0`;
   scoreCard.innerHTML = "";
   restartBtn.style.display = "none";
+  nextPageBtn.style.display = "none"; 
   
   loadQuestion();
   startTimer();
-  updateProgress(); // Initial progress update
+  // updateProgress(); // Initial progress update - This is called by loadQuestion()
 }
 
 function updateProgress() {
-  // const totalPending = (quizData.length - current) + wrongQuestions.length; // Old logic
-  // const totalQuestions = quizDataStore.length + wrongQuestions.length; // Old logic
-  
   // New logic:
-  // totalQuestionsInQuiz is set at the start and incremented when a new wrong question is added.
-  const currentQuestionNumber = current + 1;
+  // totalQuestionsInQuiz is the total number of pages, including retries.
+  const currentQuestionNumber = current + 1; // This is the global page number
   
-  progressTracker.innerText = `📍 ${currentQuestionNumber} of ${totalQuestionsInQuiz}`;
+  // Add page number to progress tracker
+  if (quizData[current]) {
+    const data = quizData[current];
+    // const totalBlankPages = Math.ceil(data.originalAnswers.length / blanksPerPage); // Already have this
+    const totalBlankPages = data.totalPassagePages;
+    const currentPageNum = data.pageIndex + 1; // Page number *within* the passage
+    
+    // Example: "Page 5 of 32 (Passage Page 5 of 10)"
+    progressTracker.innerText = `📍 Page ${currentQuestionNumber} of ${totalQuestionsInQuiz} (Passage Page ${currentPageNum} of ${totalBlankPages})`;
+  } else if (current > 0) {
+    progressTracker.innerText = "Done!";
+  } else {
+    progressTracker.innerText = `📍 Page 1 of ${totalQuestionsInQuiz}`;
+  }
 }
 
 
@@ -408,14 +476,26 @@ function loadQuestion() {
   if (current >= quizData.length) return showScore();
   
   selectedOption = null;
-  const data = quizData[current];
-  updateProgress();
-
+  const data = quizData[current]; // Data is now a PAGE object
+  updateProgress(); // Call updateProgress here to get page numbers
+  
   dragOptionsEl.innerHTML = "";
   dropContainerEl.innerHTML = "";
+  nextPageBtn.style.display = "none"; // Ensure next button is hidden on new page load
 
-  // 1. Shuffle and display drag options (same as before)
-  const shuffledAnswers = [...data.answers].sort(() => Math.random() - 0.5);
+  // --- Pagination Logic ---
+  const pageIndex = data.pageIndex;
+  const startIndex = pageIndex * blanksPerPage;
+  const endIndex = startIndex + blanksPerPage;
+  
+  const answersForThisPage = data.originalAnswers.slice(startIndex, endIndex);
+  const allPassageParts = data.originalPassage.split("___");
+  // Get parts relevant to this page. +1 because split gives one more part than answers.
+  const partsForThisPage = allPassageParts.slice(startIndex, endIndex + 1);
+  // -------------------------
+
+  // 1. Shuffle and display drag options for this page
+  const shuffledAnswers = [...answersForThisPage].sort(() => Math.random() - 0.5);
   shuffledAnswers.forEach((ans) => {
     const div = document.createElement("div");
     div.classList.add("drag-item");
@@ -425,26 +505,37 @@ function loadQuestion() {
   });
 
   // 2. Process the passage string
-  const passage = data.passage;
-  const answers = data.answers;
-  const parts = passage.split("___"); // Split the passage by the blank marker
+  // const passage = data.passage; // Old
+  // const answers = data.answers; // Old
+  // const parts = passage.split("___"); // Old
 
   // 3. Reconstruct the passage with interactive blanks
-  parts.forEach((part, index) => {
+  
+  // Add "..." if this isn't the first page
+  if (startIndex > 0) {
+    dropContainerEl.appendChild(document.createTextNode("... "));
+  }
+
+  partsForThisPage.forEach((part, index) => {
     // Add the text part
     dropContainerEl.appendChild(document.createTextNode(part));
 
-    // If there's another part, add a blank (drop-zone)
-    if (index < answers.length) {
+    // If there's another answer for this page, add a blank
+    if (index < answersForThisPage.length) {
       const dropZone = document.createElement("button"); // Use a button for interactivity
       dropZone.classList.add("drop-zone");
       dropZone.innerText = "___"; // This is the visual blank
-      dropZone.dataset.answer = answers[index]; // Assign the correct answer
+      dropZone.dataset.answer = answersForThisPage[index]; // Assign the correct answer
       dropZone.onclick = () => placeOption(dropZone);
       dropContainerEl.appendChild(dropZone);
       dropContainerEl.appendChild(document.createTextNode(" ")); // Add a space
     }
   });
+
+  // Add "..." if this isn't the last page
+  if (endIndex < data.originalAnswers.length) {
+     dropContainerEl.appendChild(document.createTextNode(" ..."));
+  }
 }
 
 function selectOption(div) {
@@ -494,9 +585,9 @@ function placeOption(dropZone) {
     setTimeout(() => dropZone.classList.remove("wrong"), 600);
 
     // Add the entire current question back to wrongQuestions if not already added
-    const currentData = quizData[current];
+    const currentData = quizData[current]; // This is now the PAGE object
     if (!wrongQuestions.includes(currentData)) {
-      wrongQuestions.push(currentData);
+      wrongQuestions.push(currentData); // Push the PAGE, not the whole passage
       totalQuestionsInQuiz++; // Increment the total
       updateProgress(); // Update immediately
     }
@@ -510,18 +601,9 @@ function placeOption(dropZone) {
   const remaining = dropContainerEl.querySelectorAll(".drop-zone:not(.filled)").length;
   
   if (remaining === 0) {
-    // All blanks filled, move to the next question
-    setTimeout(() => {
-      current++;
-
-      // If we've finished the initial set, check if there are wrong questions to retry
-      if (current >= quizData.length && wrongQuestions.length > 0) {
-        quizData.push(...wrongQuestions); // Add wrong questions to the end
-        wrongQuestions = []; // Clear the retry queue
-      }
-      
-      loadQuestion(); // Load the next question (or show score)
-    }, 800); // Wait a moment to show the last correct answer
+    // All blanks for this page are filled
+    // Show the next button so the user can review and advance manually
+    nextPageBtn.style.display = "inline-block";
   }
 }
 
@@ -560,6 +642,7 @@ function showScore() {
   dragOptionsEl.innerHTML = "";
   dropContainerEl.innerHTML = `<h2 style="text-align:center;">🎉 Quiz Completed!</h2>`;
   progressTracker.innerText = "Done!";
+  nextPageBtn.style.display = "none"; 
   
   // Determine success message
   const successMessage = (totalWrongGuesses === 0) 
@@ -727,7 +810,24 @@ restartBtn.onclick = () => {
   nameFormEl.style.display = "block";
   nameInputEl.value = ""; // Clear name field
   deptSelectEl.value = ""; // Reset department dropdown
+  nextPageBtn.style.display = "none"; 
 };
+
+// --- Handle Next Page Button Click ---
+nextPageBtn.onclick = () => {
+  current++; // Move to next page
+
+  // If we've finished the initial set, check if there are wrong questions to retry
+  if (current >= quizData.length && wrongQuestions.length > 0) {
+    quizData.push(...wrongQuestions); // Add wrong PAGES to the end
+    wrongQuestions = []; // Clear the retry queue
+  }
+  
+  loadQuestion(); // Load the next question (or show score)
+};
+
+
 </script>
 </body>
 </html>
+
