@@ -1,180 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Learning Portfolio</title>
-<style>
-  :root {
-    --bg: #fbf9f4;
-    --ink: #1f2a37;
-    --muted: #667085;
-    --line: #d9d4c7;
-    --accent: #2f5d50;
-    --hover: #eef3ef;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #161b1a;
-      --ink: #e8ece9;
-      --muted: #9aa5a0;
-      --line: #2f3a37;
-      --accent: #8cc5b0;
-      --hover: #1f2826;
-    }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: Georgia, "Times New Roman", serif;
-    line-height: 1.6;
-  }
-  main { max-width: 640px; margin: 0 auto; padding: 48px 20px 64px; }
-  h1 { font-size: 2rem; margin: 0 0 4px; line-height: 1.2; }
-  .sub { color: var(--muted); margin: 0 0 32px; font-family: system-ui, sans-serif; font-size: .95rem; }
-  ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-  li { border-bottom: 1px solid var(--line); }
-  a {
-    display: block;
-    padding: 14px 8px;
-    color: var(--ink);
-    text-decoration: none;
-    font-size: 1.1rem;
-  }
-  a:hover, a:focus-visible { background: var(--hover); color: var(--accent); outline: none; }
-  a:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
-  .folder { display: block; color: var(--muted); font: .8rem system-ui, sans-serif; }
-  .msg { color: var(--muted); font-family: system-ui, sans-serif; }
-  .err { color: #b42318; }
-  @media (prefers-color-scheme: dark) { .err { color: #f97066; } }
-</style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <title>A Quote A Day | English Dept Archive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=IM+Fell+English:ital@0;1&family=DM+Mono:wght@300;400;500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<main>
-  <h1 id="title">My Learning Portfolio</h1>
-  <p class="sub" id="sub"></p>
-  <ul id="list"></ul>
-  <p class="msg" id="status">Loading your pages…</p>
-</main>
+<body> 
 
-<script>
-(function () {
-  var list = document.getElementById("list");
-  var status = document.getElementById("status");
+    <!-- ═══ MASTHEAD ═══ -->
+    <header class="masthead" id="masthead">
+        <div class="masthead-rule top-rule"></div>
+        <div class="masthead-inner">
+            <div class="masthead-meta">
+                <span id="mastDateline" class="meta-pill">LOADING...</span>
+                <div class="masthead-title-block">
+                    <div class="masthead-eyebrow"></div>
+                    <h1 class="masthead-title">A Quote A Day</h1>
+                    <div class="masthead-subtitle">English Department Wisdom Archive</div>
+                </div>
+                <span id="mastCount" class="meta-pill">0 Quotes</span>
+            </div>
+        </div>
+        <div class="masthead-rule bottom-rule"></div>
+        <nav class="nav-bar" id="navBar">
+            <button class="quick-tab active" data-tab="all">All Quotes</button>
+            <button class="quick-tab" data-tab="authors">By Author</button>
+            <button class="quick-tab" data-tab="contributors">By Contributor</button>
+            <button class="quick-tab" data-tab="departments">By Dept</button>
+            <div class="search-wrap">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search quotes, authors…" autocomplete="off"/>
+                <span class="search-icon">⌕</span>
+            </div>
+        </nav>
 
-  // 1. Work out the owner and repository from the page address.
-  //    https://kavitha403.github.io/pages-of-progress/  ->  kavitha403 / pages-of-progress
-  //    For testing elsewhere, add ?owner=kavitha403&repo=pages-of-progress to the address.
-  var params = new URLSearchParams(location.search);
-  var owner = params.get("owner");
-  var repo = params.get("repo");
-  var host = location.hostname;
+        <!-- Compact bar — visible only when scrolled on mobile -->
+        <div class="masthead-compact-bar" id="compactBar">
+            <span class="masthead-compact-title">A Quote A Day</span>
+            <div class="masthead-compact-actions">
+                <button class="compact-icon-btn" id="compactSearchBtn" aria-label="Search">⌕</button>
+                <button class="compact-icon-btn" id="compactFilterBtn" aria-label="Filter">≡</button>
+            </div>
+        </div>
 
-  if (!owner && host.endsWith(".github.io")) {
-    owner = host.split(".")[0];
-    var firstFolder = location.pathname.split("/").filter(Boolean)[0];
-    // A repo named <owner>.github.io is served from the root of the address.
-    repo = firstFolder && firstFolder.indexOf(".") === -1 ? firstFolder : owner + ".github.io";
-  }
+        <!-- Compact search — slides in below compact bar -->
+        <div class="compact-search-bar" id="compactSearchBar">
+            <input type="text" id="compactSearchInput" placeholder="Search quotes, authors…" autocomplete="off"/>
+        </div>
+    </header>
 
-  if (!owner || !repo) {
-    fail("This page can't tell which repository it belongs to. Open it from your GitHub Pages address, or add ?owner=YOUR_USERNAME&repo=YOUR_REPO to the address.");
-    return;
-  }
+    <!-- ═══ FILTER BOTTOM SHEET (outside header so it overlays everything) ═══ -->
+    <div class="filter-sheet-backdrop" id="filterSheetBackdrop">
+        <div class="filter-sheet">
+            <div class="filter-sheet-handle"></div>
+            <div class="filter-sheet-title">View</div>
+            <div class="filter-sheet-tabs" id="filterSheetTabs">
+                <button class="filter-sheet-tab active" data-tab="all">All Quotes</button>
+                <button class="filter-sheet-tab" data-tab="authors">By Author</button>
+                <button class="filter-sheet-tab" data-tab="contributors">By Contributor</button>
+                <button class="filter-sheet-tab" data-tab="departments">By Dept</button>
+            </div>
 
-  document.getElementById("sub").textContent = owner + " / " + repo;
+            <div class="filter-sheet-divider"></div>
 
-  // 2. Make a readable title from a file name.
-  function prettify(path) {
-    var name = path.split("/").pop().replace(/\.html?$/i, "");
-    name = name.replace(/\s*\(\d+\)\s*$/, "");   // "report (1)" -> "report"
-    name = name.replace(/[-_]+/g, " ").trim();
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  }
+            <div class="filter-sheet-title">Download by Date Range</div>
+            <div class="filter-sheet-download">
+                <div class="filter-date-row">
+                    <div class="filter-date-field">
+                        <label class="filter-date-label" for="sheetFromDateInput">From</label>
+                        <input type="date" id="sheetFromDateInput" class="filter-date-input" aria-label="From date"/>
+                    </div>
+                    <div class="filter-date-field">
+                        <label class="filter-date-label" for="sheetToDateInput">To</label>
+                        <input type="date" id="sheetToDateInput" class="filter-date-input" aria-label="To date"/>
+                    </div>
+                </div>
+                <div class="filter-download-actions">
+                    <button class="filter-download-btn" id="sheetDownloadHtmlBtn">Download HTML</button>
+                    <button class="filter-download-btn" id="sheetDownloadPdfBtn">Download PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  function encodePath(path) {
-    return path.split("/").map(encodeURIComponent).join("/");
-  }
+    <style>
+        .filter-sheet-divider{height:1px;background:var(--gold-border,#d3cec4);margin:20px 0 16px;}
+        .filter-sheet-download{display:flex;flex-direction:column;gap:12px;}
+        .filter-date-row{display:flex;gap:10px;}
+        .filter-date-field{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;}
+        .filter-date-label{
+            font-family:var(--mono,monospace);font-size:9px;letter-spacing:2px;
+            text-transform:uppercase;color:var(--ink-muted,#8a837a);
+        }
+        .filter-date-input{
+            width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;
+            border:1px solid var(--gold-border,#d3cec4);font-family:var(--sans,inherit);
+            font-size:15px;background:#fff;color:#1c1a16;
+        }
+        .filter-download-actions{display:flex;gap:10px;}
+        .filter-download-btn{
+            flex:1;padding:12px 10px;border-radius:30px;border:1px solid var(--gold-border,#d3cec4);
+            background:var(--gold,#b8913a);color:#fff;font-family:var(--sans,inherit);
+            font-size:13px;font-weight:600;letter-spacing:0.3px;cursor:pointer;
+        }
+        .filter-download-btn:active{opacity:0.85;}
+    </style>
 
-  function fail(text) {
-    status.textContent = text;
-    status.className = "msg err";
-  }
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="newspaper-body" id="mainContent">
+        <div id="loader" class="loader-state">
+            <div class="loader-ornament">❦</div>
+            <p class="loader-text">Typesetting Wisdom…</p>
+        </div>
+    </main>
 
-  function render(files) {
-    list.textContent = "";
-    if (!files.length) {
-      status.textContent = "No HTML pages yet. Upload an .html file to this repository and refresh.";
-      return;
-    }
-    status.textContent = "";
-    files.forEach(function (path) {
-      var li = document.createElement("li");
-      var a = document.createElement("a");
-      a.href = "./" + encodePath(path);
-      a.textContent = prettify(path);
-      var parts = path.split("/");
-      if (parts.length > 1) {
-        var f = document.createElement("span");
-        f.className = "folder";
-        f.textContent = parts.slice(0, -1).join(" / ");
-        a.appendChild(f);
-      }
-      li.appendChild(a);
-      list.appendChild(li);
-    });
-  }
+    <!-- ═══ DECK OVERLAY ═══ -->
+    <div class="deck-overlay" id="deckOverlay" role="dialog" aria-modal="true" aria-label="Quote viewer">
+        <div class="deck-topbar">
+            <!-- Wrapped buttons in a left-aligned container for better spacing -->
+            <div class="deck-actions-left" style="display: flex; gap: 8px;">
+                <button class="deck-nav-btn" id="deckClose" aria-label="Close">✕</button>
+                <button class="deck-nav-btn" id="btnDownloadHtml" aria-label="Download HTML">HTML</button>
+                <button class="deck-nav-btn" id="btnDownloadPdf" aria-label="Download PDF">PDF</button>
+            </div>
+            <div class="deck-progress-wrap" id="deckProgressWrap"></div>
+            <div id="deckCounter" class="deck-counter">1 / 1</div>
+        </div>
+        <div class="deck-nav-arrows">
+            <button class="arrow-btn" id="arrowPrev" aria-label="Previous">&#8592;</button>
+            <button class="arrow-btn" id="arrowNext" aria-label="Next">&#8594;</button>
+        </div>
+        <div class="deck-track-wrap">
+            <div class="deck-track" id="deckTrack"></div>
+        </div>
+    </div>
 
-  // 3. Keep a 5-minute copy of the list in the browser. GitHub allows only
-  //    60 anonymous requests per hour per internet connection, and a whole
-  //    classroom shares one. The cache keeps repeat visits from using it up.
-  var cacheKey = "pages-index:" + owner + "/" + repo;
-  var cached = null;
-  try {
-    cached = JSON.parse(localStorage.getItem(cacheKey));
-  } catch (e) { cached = null; }
+    <!-- ═══ DIRECTORY PANEL ═══ -->
+    <div class="dir-backdrop" id="dirBackdrop"></div>
+    <aside class="dir-panel" id="dirPanel" role="complementary">
+        <div class="dir-header">
+            <h2 id="dirTitle" class="dir-title">Directory</h2>
+            <button id="dirClose" class="dir-close-btn" aria-label="Close directory">✕</button>
+        </div>
+        <div id="dirList" class="dir-list"></div>
+    </aside>
 
-  if (cached && Date.now() - cached.time < 5 * 60 * 1000) {
-    render(cached.files);
-    return;
-  }
+    <!-- ═══ SHARE CANVAS (offscreen) ═══ -->
+    <div id="share-canvas-container" style="position:fixed;left:-9999px;top:0;z-index:-1;"></div>
 
-  var url = "https://api.github.com/repos/" + encodeURIComponent(owner) + "/" +
-            encodeURIComponent(repo) + "/git/trees/HEAD?recursive=1";
-
-  fetch(url)
-    .then(function (r) {
-      if (r.status === 403 || r.status === 429) throw new Error("limit");
-      if (!r.ok) throw new Error("http " + r.status);
-      return r.json();
-    })
-    .then(function (data) {
-      var files = (data.tree || [])
-        .filter(function (item) {
-          return item.type === "blob" &&
-                 /\.html?$/i.test(item.path) &&
-                 item.path.toLowerCase() !== "index.html";
-        })
-        .map(function (item) { return item.path; })
-        .sort(function (a, b) { return a.localeCompare(b); });
-
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), files: files }));
-      } catch (e) { /* storage unavailable; fine */ }
-
-      render(files);
-    })
-    .catch(function (err) {
-      if (cached) { render(cached.files); return; }  // show the older list instead of nothing
-      if (err.message === "limit") {
-        fail("GitHub is limiting requests from this network right now. Wait a few minutes and refresh.");
-      } else {
-        fail("Couldn't load the list. Check that the repository is public and refresh.");
-      }
-    });
-})();
-</script>
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
